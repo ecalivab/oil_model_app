@@ -1,0 +1,85 @@
+{% extends "stories/base.html"%}
+{% load custom_template_tags %}
+
+
+{% block header %}
+    <div class="container-fluid bg-light">
+        <h1 class="h1-left pt-3">Amazing Crude Story</h1>
+        <div class="btn-group btn-block">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="GET">
+              <select class="text-center" id="sel_country" name="load_country">
+                  <option value="" selected disabled hidden>--Select Load Country--</option>
+                  {% for name in corridors%}
+                      <option class="dropdown-item" value={{name.load_country}}>{{name.load_country}}</option>  
+                  {%endfor%}                 
+              </select> 
+              <select class="text-center" id="sel_corridor" name="corridor_id">
+                <option value="" selected disabled hidden>--Select Corridor--</option>
+              </select>
+              <select class="text-center" id="sel_date" name="date">
+                <option value="" selected disabled hidden>--Select Date--</option>
+              </select>
+              <button type="submit" class="btn btn-outline-info">Filter</button>       
+          </form>
+
+          <script>
+            $("#sel_country").change(function () {
+              var country_sel = $(this).val();  // get the selected country ID from the HTML input
+        
+              $.ajax({                       // initialize an AJAX request
+                url: "{% url 'ajax_load_corridor' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                data: {
+                  'country': country_sel       // add the country id to the GET parameters
+                },
+                success: function (data) {   // `data` is the return of the `load_cities` view function
+                  $("#sel_corridor").html(data);  // replace the contents of the city input with the data that came from the server
+                }
+              });
+        
+            });
+
+            $("#sel_corridor").change(function () {
+              var corridor_sel = $(this).val();  // get the selected country ID from the HTML input
+        
+              $.ajax({                       // initialize an AJAX request
+                url: "{% url 'ajax_load_date' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                data: {
+                  'id': corridor_sel       // add the country id to the GET parameters
+                },
+                success: function (data) {   // `data` is the return of the `load_cities` view function
+                  $("#sel_date").html(data);  // replace the contents of the city input with the data that came from the server
+                }
+              });
+        
+            });
+
+          </script>
+      </div>
+    </div>
+    
+
+{% endblock header %}
+
+
+{% block content %}
+
+<div class="container-md bg-info">
+    <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+    <div class="row">
+      <div class="col-md-7">
+        <p class="py-3">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Commodi aut, repellat dolores eum dolor voluptatum quo libero distinctio sequi tempora iste perferendis corrupti perspiciatis quasi delectus rerum fugiat obcaecati. Officiis.</p>
+      </div>
+      <div class="col-6 col-md-5 bg-secondary">
+          Side Bar
+          <br>
+          {% if select_corridor %}
+            <p>Corridor Name is {{select_corridor.corridor_name}} !!!</p>
+          {%else%}
+            <p>Corridor Not Selected</p>
+          {%endif%}
+
+          <p>Poner aqui cosas interactivas</p>
+      </div>
+    </div>
+
+{% endblock content%}

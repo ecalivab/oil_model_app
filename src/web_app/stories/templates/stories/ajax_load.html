@@ -1,0 +1,14 @@
+<option value="">--Select {{select}}--</option>
+
+{% if select == "Corridor" %}
+    {% for subcat in corridor_list %}
+        <option value="{{ subcat.corridor_id }}">{{ subcat.corridor_name}}</option>
+    {% endfor %}
+{% endif %}
+
+
+{% if select == "Date" %}
+    {% for subcat in date_list %}
+        <option value="{{ subcat.date }}">{{ subcat.date}}</option>
+    {% endfor %}
+{% endif %}

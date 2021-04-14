@@ -1,0 +1,55 @@
+{% extends "stories/base.html"%}
+{% load custom_template_tags %}
+
+
+{% block header %}
+    <div class="container-fluid bg-light">
+        <h1 class="h1-left pt-3">Amazing Crude Story</h1>
+        <div class="btn-group btn-block">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="GET">
+              <select class="text-center" id="sel_id" name="corridor_name"  onchange="this.form.submit();">
+                  <option value="" selected disabled hidden>--Select Corridor--</option>
+                  {% for name in corridors%}
+                      <option class="dropdown-item" value={{name.corridor_name}}>{{name.corridor_name}}</option>  
+                  {%endfor%}                 
+              </select>    
+          </form>
+
+          <form class="px-2 pb-2" name="myform" id ="myform" method="GET">
+            <select class="text-center" id="sel_other" name="other_form"  onchange="this.form.submit();">
+                <option value="" selected disabled hidden>--Select Other--</option>
+                {% for name in corridors%}
+                    <option class="dropdown-item" value={{name.corridor_name}}>{{name.corridor_name}}</option>  
+                {%endfor%}                 
+            </select>         
+        </form>
+      </div>
+    </div>
+    
+
+{% endblock header %}
+
+
+{% block content %}
+
+<div class="container-md bg-info">
+    <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+    <div class="row">
+      <div class="col-md-7">
+        <p class="py-3">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Commodi aut, repellat dolores eum dolor voluptatum quo libero distinctio sequi tempora iste perferendis corrupti perspiciatis quasi delectus rerum fugiat obcaecati. Officiis.</p>
+      </div>
+      <div class="col-6 col-md-5 bg-secondary">
+          Side Bar
+          <br>
+          <p id="demo"></p>
+          {% if select_corridor is not None%}
+            <p>Corridor Name is {{select_corridor}} !!!</p>
+          {%else%}
+            <p>Corridor Not Selected</p>
+          {%endif%}
+
+          <p>Poner aqui cosas interactivas</p>
+      </div>
+    </div>
+
+{% endblock content%}

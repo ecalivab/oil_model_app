@@ -1,0 +1,22 @@
+.html {
+    height: 100%;
+}
+
+.bg-custom{
+    background:#586de6;
+}
+
+.h1-left{
+    margin-left: 250px;
+}
+.h2-pad {
+    margin-left: 120px;
+    margin-top: 25px;
+}
+.bg-body{
+    background-color: #f2ece8 !important;
+}
+.bg-card{
+    background-color: #f0e3da
+}
+

@@ -1,0 +1,84 @@
+{% extends "stories/base.html"%}
+{% load static %}
+
+{% block content %}
+    <h2 class="h2-pad">Your Stories</h1>
+    <div class="container pt-4">
+        <div class="row row-cols-3">
+            <div class="col-4">
+                <div class="card bg-card" style="width: 22rem;">
+                    <img src="{% static '/stories/images/est_logo.jpg'%}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">The Story about Crude Oil</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Oil is bad</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="{% url 'story_ajax' %}" class="card-link">Story Time</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="#" class="card-link">Card link</a>
+                        <a href="#" class="card-link">Another link</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="#" class="card-link">Card link</a>
+                        <a href="#" class="card-link">Another link</a>
+                    </div>
+                </div>
+            </div>
+        </div>     
+    </div>
+
+    <div class="container pt-5">
+        <div class="row row-cols-3">
+            <div class="col-4">
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">The Story about Crude Oil 2</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Oil is bad</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="{% url 'story' %}" class="card-link">Story Time</a>
+                    
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="#" class="card-link">Card link</a>
+                        <a href="#" class="card-link">Another link</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card" style="width: 22rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="#" class="card-link">Card link</a>
+                        <a href="#" class="card-link">Another link</a>
+                    </div>
+                </div>
+            </div>
+        </div>     
+    </div>
+
+
+
+{% endblock content%}
