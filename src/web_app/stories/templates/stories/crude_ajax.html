@@ -16,8 +16,8 @@
               <select class="text-center" id="sel_corridor" name="corridor_id">
                 <option value="" selected disabled hidden>--Select Corridor--</option>
               </select>
-              <select class="text-center" id="sel_date" name="date">
-                <option value="" selected disabled hidden>--Select Date--</option>
+              <select class="text-center" id="sel_pipe" name="pipe_id">
+                <option value="" selected disabled hidden>--Select Pipeline--</option>
               </select>
               <button type="submit" class="btn btn-outline-info">Filter</button>       
           </form>
@@ -42,12 +42,12 @@
               var corridor_sel = $(this).val();  // get the selected country ID from the HTML input
         
               $.ajax({                       // initialize an AJAX request
-                url: "{% url 'ajax_load_date' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                url: "{% url 'ajax_load_pipe' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
                 data: {
                   'id': corridor_sel       // add the country id to the GET parameters
                 },
                 success: function (data) {   // `data` is the return of the `load_cities` view function
-                  $("#sel_date").html(data);  // replace the contents of the city input with the data that came from the server
+                  $("#sel_pipe").html(data);  // replace the contents of the city input with the data that came from the server
                 }
               });
         
@@ -63,13 +63,19 @@
 
 {% block content %}
 
-<div class="container-md bg-info">
+<div class="container-md bg-s">
     <!-- Stack the columns on mobile by making one full-width and the other half-width -->
     <div class="row">
       <div class="col-md-7">
         <p class="py-3">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Commodi aut, repellat dolores eum dolor voluptatum quo libero distinctio sequi tempora iste perferendis corrupti perspiciatis quasi delectus rerum fugiat obcaecati. Officiis.</p>
+        <div class="container">
+          {% autoescape off %}
+            {{ plot_div }}
+          {% endautoescape %}
+        </div>
+        
       </div>
-      <div class="col-6 col-md-5 bg-secondary">
+      <div class="col-6 col-md-5 bg-card">
           Side Bar
           <br>
           {% if select_corridor %}

@@ -6,23 +6,11 @@
     <div class="container-fluid bg-light">
         <h1 class="h1-left pt-3">Amazing Crude Story</h1>
         <div class="btn-group btn-block">
-          <form class="h1-left pb-2 text" name="myform" id ="myform" method="GET">
-              <select class="text-center" id="sel_id" name="corridor_name"  onchange="this.form.submit();">
-                  <option value="" selected disabled hidden>--Select Corridor--</option>
-                  {% for name in corridors%}
-                      <option class="dropdown-item" value={{name.corridor_name}}>{{name.corridor_name}}</option>  
-                  {%endfor%}                 
-              </select>    
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST">  {% csrf_token %}
+             <label for="Corridors">Corridor: </label> 
+             <input type="text" name="corridor" id="corridor"> 
+             <button type="submit" class="btn btn-outline-info">Filter</button>  
           </form>
-
-          <form class="px-2 pb-2" name="myform" id ="myform" method="GET">
-            <select class="text-center" id="sel_other" name="other_form"  onchange="this.form.submit();">
-                <option value="" selected disabled hidden>--Select Other--</option>
-                {% for name in corridors%}
-                    <option class="dropdown-item" value={{name.corridor_name}}>{{name.corridor_name}}</option>  
-                {%endfor%}                 
-            </select>         
-        </form>
       </div>
     </div>
     
@@ -51,5 +39,16 @@
           <p>Poner aqui cosas interactivas</p>
       </div>
     </div>
+
+
+    <script>
+      $(function() {
+          $("#corridor").autocomplete({
+              source: "{% url 'story' %}",
+              minLength: 1,
+              delay: 150,
+          });
+      });
+      </script>
 
 {% endblock content%}

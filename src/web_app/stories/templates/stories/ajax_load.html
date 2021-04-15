@@ -7,8 +7,8 @@
 {% endif %}
 
 
-{% if select == "Date" %}
-    {% for subcat in date_list %}
-        <option value="{{ subcat.date }}">{{ subcat.date}}</option>
+{% if select == "Pipe" %}
+    {% for subcat in pipe_list %}
+        <option value="{{ subcat.id }}">{{ subcat.name}}</option>
     {% endfor %}
 {% endif %}
