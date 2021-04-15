@@ -1,0 +1,8 @@
+aux/*
+bin/*
+etc/*
+include/*
+lib/*
+lib64/*
+share/*
+src/shape_files/EEZ_shp/*
