@@ -52,7 +52,7 @@ def create_input_file(alphatanker_file):
         where_clause = "corridor_name=%s" % repr(route_name)
         _, count = get_values(conn, 'corridor', where=where_clause)
 
-        if(count == 0):
+        if (count == 0):
             #The first try will try to find the port 
             #If is not possible it will go to the region name
             #If not possible it will go to the portCoodinate file
@@ -150,7 +150,7 @@ def prepare_java_file(java_csv) -> pd.DataFrame:
 
 if __name__ == '__main__':
     #create_input_file('../input_data_spreadsheet/4_export_prova_alph_2.xlsx')
-    create_input_file('../input_data_spreadsheet/4_export_prova_alph.xlsx')
+    create_input_file('../input_data_spreadsheet/4_export_prova_alph3.xlsx')
     df, pipe_dict = prepare_java_file('java_input.csv')
     print(df.head(60))
 
