@@ -15,7 +15,10 @@ def parse_surface(input_file) -> pd.DataFrame:
     return pipe_lines
 
 if __name__ == '__main__':
+    df = parse_pipeline('../input_data_spreadsheet/pipeline_info.xlsx')
+    print(df)
     df = parse_pipeline_country('../input_data_spreadsheet/pipeline_info.xlsx')
     print(df)
     df = parse_surface('../input_data_spreadsheet/surface_area_country.xls')
     print(df)
+   
