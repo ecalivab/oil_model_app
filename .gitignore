@@ -6,3 +6,5 @@ lib/*
 lib64/*
 share/*
 src/shape_files/EEZ_shp/*
+src/database_driver/database.ini
+src/web_app/oil_risk_platform/settings.py
