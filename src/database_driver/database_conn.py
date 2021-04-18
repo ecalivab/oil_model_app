@@ -72,6 +72,30 @@ def insert_into(conn, table_name, dataframe):
     print("execute_values() done")
     cursor.close()
 
+def insert_corridor_intake(conn, table_name, dataframe):
+    """
+    Using psycopg2.extras.execute_values() to insert the dataframe
+    """
+    # Create a list of tupples from the dataframe values
+    tuples = [tuple(x) for x in dataframe.to_numpy()] #To index a tuple of values there should be tuples (12.5,) or a list [12.5]
+    # Comma-separated dataframe columns
+    cols = ','.join(list(dataframe.columns))
+    # SQL query to execute
+    query  = "INSERT INTO %s(%s) VALUES(%%s, %%s, %%s, to_date(%%s, 'DD-MM-YYYY'))" % (table_name, cols)
+    cursor = conn.cursor()
+    
+    try:
+        extras.execute_batch(cursor, query, tuples)
+        conn.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("Error: %s" % error)
+        conn.rollback()
+        cursor.close()
+        return 1
+    print("execute_values() done")
+    cursor.close()
+
+
 def get_values (conn, table_name, values='*' ,where=None) -> Tuple[pd.DataFrame, int]:
     cursor = conn.cursor()
     

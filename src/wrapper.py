@@ -1,5 +1,8 @@
 import os
 
+import numpy
+from psycopg2.extensions import register_adapter, AsIs
+
 from numpy.core.numeric import identity
 import datetime
 
@@ -17,7 +20,7 @@ from parsers.parser_lvh import parse_LVH
 ############################CONFIGURATION FLAGS############################
 ###########################################################################
 flag_insert_lvh = 0
-lvh_file = "../input_data_spreadsheet/commodity_alphatanker.xlsx"
+lvh_file = "../input_data_spreadsheet/commodity AT_GDP.xlsx"
 
 flag_insert_straits = 0
 strait_file = '../input_data_spreadsheet/straits_country.xlsx'
@@ -36,17 +39,25 @@ flag_insert_piracy = 0
 piracy_file = '../input_data_spreadsheet/2019 Stable Seas Index Data(OEF).xlsx'
 piracy_year = 2019
 
-flag_geo_risk = 1
+flag_geo_risk = 0
 geo_risk_year = 2019
 
-flag_ck_risk = 1
+flag_ck_risk = 0
 ck_risk_year = 2019
 
-flag_intake = 0
-alphatanker_file = '../input_data_spreadsheet/4_export_prova_alph_2.xlsx'
+flag_intake = 1
+alphatanker_file = '../input_data_spreadsheet/4_export_prova_alph.xlsx'
 
-###############################################################################
+#########################-----ADAPT-----######################################
+def addapt_numpy_float64(numpy_float64):
+    return AsIs(numpy_float64)
+def addapt_numpy_int64(numpy_int64):
+    return AsIs(numpy_int64)
 
+register_adapter(numpy.float64, addapt_numpy_float64)
+register_adapter(numpy.int64, addapt_numpy_int64)
+
+##############################################################################
 conn = connect()
 
 ############### RUN ONCE ####################
@@ -86,7 +97,8 @@ if flag_insert_pipelines == 1:
 
 if flag_insert_approx_pipelines == 1:
     approx_pipelines = parse_surface(approx_pipeline_file)
-    
+    insert_into(conn, 'pipeline', approx_pipelines)
+
     for index,row in approx_pipelines.iterrows():
         where_clause = "name=%s" % repr(row['name'])
         id,_ = get_values(conn, 'pipeline','pipeline_id', where_clause)
@@ -125,6 +137,7 @@ if flag_ck_risk == 1 and ck_risk_year!=0:
 
 #Add Corridor and Alphatanker intakes
 if flag_intake == 1:
+    
     print("------Creating Java Input File-------")
     create_input_file(alphatanker_file)
 
@@ -139,13 +152,13 @@ if flag_intake == 1:
     #Add Corridor to database 
     print("------Insert into Corridor-------")
     insert_into(conn, 'corridor', corridor_df)
-
+    
     #Run Intersecction 
     sea_length, straits = compute_routes_length("shape_files/new_route_%s/out.shp" %time)
     sea_length = sea_length.drop(['geometry'], axis = 1) #Geometry has no use at the moment.
 
-
     #Add chokepoints and pipelines for the corridor into database 
+    
     print("------Insert into Corridor Chokepoint-------")
     for key, value in straits.items():
         where_clause = "corridor_name=%s" % repr(key)
@@ -156,23 +169,17 @@ if flag_intake == 1:
                 ck_id,_ = get_values(conn, 'chokepoint', 'chokepoint_id',where_clause)
                 id['chokepoint_id'] = ck_id['chokepoint_id']
                 insert_into(conn, "corridor_ck", id)
-    
+
     print("------Insert into Corridor Pipeline-------")
     for key, value in pipe_lines.items():
         where_clause = "corridor_name=%s" % repr(key)
         id,_ = get_values(conn, 'corridor','corridor_id', where_clause)
-        id['corridor_id'] = id['corridor_id'].item()
-        corridor_id = id['corridor_id'].item()
         for pl in value:
-            #Create new data frame because of problems with numpy types np.int64 and postgres just this dataframe has the problem.
-            pipeline = pd.DataFrame(columns=['corridor_id', 'pipeline_id'])
             where_clause = "name=%s" % repr(pl)
             pl_id,_ = get_values(conn, 'pipeline', 'pipeline_id',where_clause)
-            pipeline_id = pl_id['pipeline_id'].item()
-            row = {'corridor_id': corridor_id, 'pipeline_id': pipeline_id}
-            pipeline = pipeline.append(row, ignore_index = True) 
-            insert_into(conn, "corridor_pipeline", pipeline)
-
+            id['pipeline_id'] = pl_id['pipeline_id']
+            insert_into(conn, "corridor_pipeline", id)
+    
     #Insert into seabranch table
     print("------Insert into Corridor Seabranch-------")
     for _, row in sea_length.iterrows():
@@ -192,7 +199,7 @@ if flag_intake == 1:
         where_clause = "name=%s" % repr(row['commodity'])
         com_df,_ = get_values(conn,'commodity_lvh','commodity_id',where_clause)
         id['commodity_id'],id['intake'], id['date'], = [com_df['commodity_id'], row['intake'], row['date']]
-        insert_into(conn, 'corridor_intake', id)
+        insert_corridor_intake(conn, 'corridor_intake', id)
 
     #LVH does not has the name of alphatanker
 
