@@ -19,44 +19,60 @@
               <select class="text-center" id="sel_pipe" name="pipe_id">
                 <option value="" selected disabled hidden>--Select Pipeline--</option>
               </select>
-              <button type="submit" class="btn btn-outline-info">Filter</button>       
+              <input type="text" name="daterange" value="01/01/2020 - 01/02/2020" />   
+              <button type="submit" class="btn btn-outline-info">Filter</button>                  
           </form>
-
-          <script>
-            $("#sel_country").change(function () {
-              var country_sel = $(this).val();  // get the selected country ID from the HTML input
-        
-              $.ajax({                       // initialize an AJAX request
-                url: "{% url 'ajax_load_corridor' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
-                data: {
-                  'country': country_sel       // add the country id to the GET parameters
-                },
-                success: function (data) {   // `data` is the return of the `load_cities` view function
-                  $("#sel_corridor").html(data);  // replace the contents of the city input with the data that came from the server
-                }
-              });
-        
-            });
-
-            $("#sel_corridor").change(function () {
-              var corridor_sel = $(this).val();  // get the selected country ID from the HTML input
-        
-              $.ajax({                       // initialize an AJAX request
-                url: "{% url 'ajax_load_pipe' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
-                data: {
-                  'id': corridor_sel       // add the country id to the GET parameters
-                },
-                success: function (data) {   // `data` is the return of the `load_cities` view function
-                  $("#sel_pipe").html(data);  // replace the contents of the city input with the data that came from the server
-                }
-              });
-        
-            });
-
-          </script>
       </div>
+      
     </div>
     
+    <script>
+      $("#sel_country").change(function () {
+        var country_sel = $(this).val();  // get the selected country ID from the HTML input
+        $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_load_corridor' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'country': country_sel       // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#sel_corridor").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });  
+      });
+
+      $("#sel_corridor").change(function () {
+        var corridor_sel = $(this).val();  // get the selected country ID from the HTML input
+        $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_load_pipe' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'id': corridor_sel       // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#sel_pipe").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });
+      });
+      
+      $(function() {
+        $('input[name="daterange"]').daterangepicker({
+          showDropdowns: true,
+          opens: 'center',
+          format: 'DD/MM/YYYY'
+        }, function(start, end, label) {
+          console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+          /*
+          $.ajax({ 
+            data: {
+              'start_date': start.format('YYYY-MM-DD'),
+              'end_date' : end.format('YYYY-MM-DD')
+            }
+            
+          })
+            */  //alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'))     
+        });
+      });
+
+    </script>
 
 {% endblock header %}
 

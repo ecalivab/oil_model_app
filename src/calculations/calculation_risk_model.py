@@ -15,6 +15,7 @@ def geo_risk (conn, year) -> pd.DataFrame:
     where_clause = "year=%s" % repr(year)
     wgi_df, _ = get_values(conn, 'wgi', where=where_clause)
     piracy_df, _ = get_values(conn, 'piracy_index', where=where_clause)
+    print(wgi_df)
     #Sea Risk
     wgi_piracy = pd.merge(wgi_df,piracy_df,on=['country','year'],how="outer",indicator=True) #Outer join because not all the contries are in the piracy file.
     wgi_piracy['piracy'] = wgi_piracy['piracy'].replace(NaN, 100)
@@ -59,19 +60,18 @@ def chokepoint_risk(conn, year):
     ck_risk_df = pd.DataFrame(columns=['strait_name', 'chokepoint_risk', 'year'])
     for _, row in chokepoints_df.iterrows():
         strait_id = row['chokepoint_id']
+        norm_alpha = row['alpha_normalized']
         name = row['strait_name']
         where_clause = "chokepoint_id=%s" % repr(strait_id)
         country,count = get_values(conn, 'country_chokepoint', where=where_clause) 
         geo_risk_country = pd.merge(geo_risk_df,country,on=['country'],how="inner",indicator=True)
         try:
-            compound_risk = ((geo_risk_country['sea_risk'].sum())/count)*0.01
+            compound_risk = (((geo_risk_country['sea_risk'].sum())/count)*norm_alpha)*0.01
             new_row = {'strait_name': name, 'chokepoint_risk': compound_risk, 'year': year }
             ck_risk_df = ck_risk_df.append(new_row, ignore_index=True)
         except ZeroDivisionError as err:
             print("%s, Check is geo_risk table is populated" % err)
-        
-        
-        
+              
     return(ck_risk_df)
 
 
@@ -208,12 +208,14 @@ if __name__ == '__main__':
     connection = connect()
         
     geo_risk_df = geo_risk(connection,'2019')
-    #print(geo_risk_df[geo_risk_df['country']=='Open sea'])
+    print(geo_risk_df)
+    print(geo_risk_df[geo_risk_df['country']=='Open sea'])
+    print(geo_risk_df[geo_risk_df['country']=='Egypt, Arab Rep.'])
     #insert_into(connection, 'geo_risk', geo_risk_df)
     #x = chokepoint_risk(connection, '2019')
-    #print(x.head(15))
+    #print(x.head(50))
     #insert_into(connection,'chokepoint_risk',x)
-    corridor_failure(connection,'java_input.csv', '2019')
+    #corridor_failure(connection,'java_input.csv', '2019')
     #risk_single_corridor(connection,'Ceyhan-Trieste','Non Heat Crude', '2020-09-15')
     
     ###### TEST SANITATION STRINGS IN QUERYS########################

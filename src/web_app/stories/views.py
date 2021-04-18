@@ -44,6 +44,9 @@ def story_ajax_view (request):
         id = request.GET.get('corridor_id')
         corridor = Corridor.objects.filter(corridor_id=id).first()
         pipeline = request.GET.get('pipe_id')
+        daterange = request.GET.get('daterange')
+        print(daterange)
+        print(type(daterange))
 
     data = list(CorridorIntake.objects.values_list('commodity').annotate(Sum('intake'))) #Return a tumple of (commodity, sum)
 
@@ -62,18 +65,11 @@ def story_ajax_view (request):
                         height = 500,
                     )
     plot_div = plot(barplot, output_type='div')
-    '''
     
-    plot_div = plot([go.Bar(x=x_data, y=y_data,
-                        name='test',
-                        opacity=0.8, marker_color='green')],
-               output_type='div')
-    '''
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
         'select_corridor' : corridor,
-        'plot_div': plot_div
-        
+        'plot_div': plot_div      
     }
 
     #print(co)
