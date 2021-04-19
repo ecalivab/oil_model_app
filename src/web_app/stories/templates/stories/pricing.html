@@ -1,0 +1,76 @@
+{% extends "stories/base.html"%}
+{% load static %}
+
+{% block content %}
+    <div class="demo">
+        <div class="container">
+            <div class="row text-center">
+                <h1 class="heading-title">Pricing Table</h1>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 col-sm-6">
+                    <div class="pricingTable">
+                        <div class="pricingTable-header">
+                            <h1 class="heading">Standard</h1>
+                            <div class="price-value">235
+                                <span class="currency">€</span>
+                                <span class="month">/mo</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-content">
+                            <li>Phone support</li>
+                            <li>Group messaging</li>
+                            <li>Chat</li>
+                            <li>Email Mont Review</li>
+                        </ul>
+                        <a href="#" class="btn btn-block btn-org text-uppercase">Purchase</a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="pricingTable">
+                        <div class="pricingTable-header blue">
+                            <h2 class="heading">Business</h2>
+                            <div class="price-value">250
+                                <span class="currency">€</span>
+                                <span class="month">/mo</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-content">
+                            <li>Phone support</li>
+                            <li>Group messaging</li>
+                            <li>Chat</li>
+                            <li>Email Mont Review</li>
+                        </ul>
+                        <a href="#" class="btn btn-block btn-blue text-uppercase">Purchase</a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="pricingTable">
+                        <div class="pricingTable-header orange">
+                            <h2 class="heading">Premium</h2>
+                            <div class="price-value">300
+                                <span class="currency">€</span>
+                                <span class="month">/mo</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-content">
+                            <li>Phone support</li>
+                            <li>Group messaging</li>
+                            <li>Chat</li>
+                            <li>Email Mont Review</li>
+                        </ul>
+                        <a href="#" class="btn btn-block btn-orange text-uppercase">Purchase</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Credits to http://labs.bootstrapthemes.co/demo/Resource/PricingTableStyleDemo38/ -->
+
+
+
+{% endblock content%}
