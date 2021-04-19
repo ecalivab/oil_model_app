@@ -10,7 +10,7 @@
     margin-left: 250px;
 }
 .h2-pad {
-    margin-left: 120px;
+    margin-left: 230px;
     margin-top: 25px;
 }
 .bg-body{
@@ -22,4 +22,203 @@
 
 .bg-s{
     background-color: #f1f1f1;
+}
+
+.row {
+    width: 1200px;
+    border: none;
+    border-radius: 0;
+    box-sizing: border-box
+}
+
+/*LOGIN IN */
+.login-container{
+    margin: auto;
+    /*border: 5px solid #FFFF00;*/
+    margin-top: 5%;    
+}
+
+.login-form-2{
+    width:50%;
+    margin: auto;
+    padding: 7%;
+    padding-bottom: 10%;
+    /*background: #0062cc;
+    background: linear-gradient(to bottom, #177b8f 50%, #05445E 100%, #56aca3 80%);*/
+    background: linear-gradient(to bottom, #1414ed 20%, #05125e 100%, #56aca3 90%);
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+.login-form-2 h1{
+    text-align: center;
+    color: #fff;
+    font-size: 55px;
+    font-weight: 800;
+}
+
+.login-container form{
+    padding: 5%;
+}
+.btnSubmit
+{
+    width: 50%;
+    border-radius: 1rem;
+    padding: 1.5%;
+    border: none;
+    cursor: pointer;
+}
+
+.login-form-2 .btnSubmit{
+    font-weight: 600;
+    color: #0062cc;
+    background-color: #fff;
+}
+.login-form-2 .ForgetPwd{
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-form-2 .SignUp{
+    color: #fff;
+    font-weight: 800;
+    font-size: 30px;
+    text-decoration: none;
+}
+
+/* SIGN UP */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+
+.signup-container .row {
+    width: 1100px;
+    border: none;
+    border-radius: 0;
+    box-sizing: border-box
+}
+
+.signup-container .lcol {
+    background: linear-gradient(to bottom, #1414ed 20%, #05125e 100%, #56aca3 90%);
+    height: 700px;
+    padding: 0 35px
+}
+
+.signup-container .rcol {
+    background: #fff;
+    padding: 80px;
+    height: 700px
+}
+
+span.txt {
+    color: #17C296
+}
+
+.greeting {
+    padding-top: 100px;
+    padding-right: 90px
+}
+
+.signup-container .h5.mt-3 {
+    padding-right: 115px
+}
+
+.footer {
+    margin-top: 220px
+}
+
+.footer span {
+    color: #B0A1E2;
+    font-size: 9px;
+    cursor: pointer
+}
+
+.fab {
+    color: #EDEDF5;
+    font-size: 10px;
+    margin-right: 20px;
+    padding-top: 3px;
+    cursor: pointer
+}
+
+h1.heading {
+    font-weight: bold
+}
+
+.form-control {
+    border: none;
+    border-radius: 0px;
+    border-bottom: 1px solid #F2F2F2
+}
+
+.form-control::placeholder {
+    font-size: 18px;
+    color: #C2C2CC;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-bottom: 1px solid #F2F2F2
+}
+
+.fone input {
+    padding-left: 20px
+}
+
+.fone {
+    position: relative
+}
+
+.fone .fas {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    padding: 8px 0px;
+    color: #C2C2CC;
+    font-size: 14px
+}
+
+.fone .image {
+    position: absolute;
+    left: 275px;
+    top: 0px;
+    cursor: pointer
+}
+
+.form-check-input {
+    margin-top: 15px
+}
+
+.form-check-label {
+    font-size: 12px;
+    color: #C2C2CC
+}
+
+.btn-success {
+    padding: 10px 40px;
+    background: #11C892;
+    border: none;
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.btn-success:hover {
+    background: #11C892
+}
+
+.btn-success:focus {
+    box-shadow: none
+}
+
+u {
+    cursor: pointer
+}
+
+p.exist {
+    font-size: 15px;
+    color: #84848a
+}
+
+p.exist span {
+    cursor: pointer;
+    color: #ABA5D3
 }

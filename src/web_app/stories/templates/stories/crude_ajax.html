@@ -6,7 +6,7 @@
     <div class="container-fluid bg-light">
         <h1 class="h1-left pt-3">Amazing Crude Story</h1>
         <div class="btn-group btn-block">
-          <form class="h1-left pb-2 text" name="myform" id ="myform" method="GET">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
               <select class="text-center" id="sel_country" name="load_country">
                   <option value="" selected disabled hidden>--Select Load Country--</option>
                   {% for name in corridors%}
@@ -99,6 +99,11 @@
           <br>
           {% if select_corridor %}
             <p>Corridor Name is {{select_corridor.corridor_name}} !!!</p>
+            <div class="container">
+              {% autoescape off %}
+                {{ bar_div }}
+              {% endautoescape %}
+            </div>
           {%else%}
             <p>Corridor Not Selected</p>
           {%endif%}

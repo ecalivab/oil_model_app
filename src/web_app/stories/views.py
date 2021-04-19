@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.db.models import Q
 from django.http import JsonResponse
 from plotly.offline import plot
 import plotly.graph_objs as go
 from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
+from utils.utils_plot import *
 
 from django.db.models import Sum
 # Create your views here.
@@ -12,6 +13,13 @@ def home_view (request):
     context ={}
     return render(request,'stories/home.html', context)
 
+def login_view(request):
+    context={}
+    return render(request,'stories/login.html', context )
+
+def sign_up_view(request):
+    context ={}
+    return render(request,'stories/sign_up.html', context)
 
 def story_view (request):
     
@@ -40,39 +48,37 @@ def story_view (request):
     return render(request, 'stories/crude_story.html', context)
 
 def story_ajax_view (request):
-    if request.method == 'GET':
-        id = request.GET.get('corridor_id')
+    corridor = None
+    bar_div = None
+    if request.method == 'POST':
+        id = request.POST.get('corridor_id')
         corridor = Corridor.objects.filter(corridor_id=id).first()
-        pipeline = request.GET.get('pipe_id')
-        daterange = request.GET.get('daterange')
-        print(daterange)
-        print(type(daterange))
+        pipeline = request.POST.get('pipe_id')
+        daterange = request.POST.get('daterange')
+        #BarPlot
+        corridor_intake = pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(corridor=id).values('commodity','intake'))
+        lhv = pd.DataFrame.from_records(
+            CommodityLvh.objects.all().values('commodity_id', 'name'))
+        
+        bar = intake_corridor_barplot(corridor_intake, lhv)
+        bar_div = plot(bar, output_type='div' )
 
-    data = list(CorridorIntake.objects.values_list('commodity').annotate(Sum('intake'))) #Return a tumple of (commodity, sum)
+    #World Map Color Plot
+    corridor_df = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
+    intake_df =   pd.DataFrame.from_records(
+        CorridorIntake.objects.filter(Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake')) #missing filter per date?
 
-    x_data,y_data = [list(c) for c in zip(*data)] #Separete x and y data by commodity and sum(intake)
-    #x_data = [str(int) for int in x_data]
+    fig = world_choropleth_map(corridor_df, intake_df)
+    world_plot_div = plot(fig, output_type='div')
 
-    x_data = [CommodityLvh.objects.values_list('name').filter(commodity_id=int)[0][0] for int in x_data] #Query returns a tuple Queryset[(name, )] 
-
-    barplot = go.Figure([go.Bar(x=x_data, y=y_data,
-                        name='test',
-                        opacity=0.8, marker_color='green')])
-
-    barplot.update_layout(
-                        title='Total Intake per Commodity',
-                        width = 500,
-                        height = 500,
-                    )
-    plot_div = plot(barplot, output_type='div')
-    
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
         'select_corridor' : corridor,
-        'plot_div': plot_div      
+        'plot_div': world_plot_div, 
+        'bar_div': bar_div,     
     }
 
-    #print(co)
     return render(request, 'stories/crude_ajax.html', context)
 
 
