@@ -68,11 +68,12 @@ class CorridorFailure(models.Model):
     corridor_failure_captive = models.FloatField(blank=True, null=True)
     corridor_failure_no_captive = models.FloatField(blank=True, null=True)
     pipeline = models.ForeignKey('Pipeline', models.DO_NOTHING, blank=True, null=True)
+    year = models.CharField(max_length=4)
 
     class Meta:
         managed = False
         db_table = 'corridor_failure'
-        unique_together = (('corridor', 'pipeline'),)
+        unique_together = (('corridor', 'pipeline', 'year'),)
 
 
 class CorridorIntake(models.Model):

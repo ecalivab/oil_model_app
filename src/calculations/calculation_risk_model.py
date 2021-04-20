@@ -15,18 +15,15 @@ def geo_risk (conn, year) -> pd.DataFrame:
     where_clause = "year=%s" % repr(year)
     wgi_df, _ = get_values(conn, 'wgi', where=where_clause)
     piracy_df, _ = get_values(conn, 'piracy_index', where=where_clause)
-    print(wgi_df)
     #Sea Risk
     wgi_piracy = pd.merge(wgi_df,piracy_df,on=['country','year'],how="outer",indicator=True) #Outer join because not all the contries are in the piracy file.
     wgi_piracy['piracy'] = wgi_piracy['piracy'].replace(NaN, 100)
-    #GeoRisk
-    
+    #GeoRisk  
     wgi_piracy["geo_risk"] = wgi_piracy.iloc[:,2:8].sum(axis=1).div(6)
     wgi_piracy["sea_risk"] = wgi_piracy.iloc[:,2:9].sum(axis=1).div(7)
   
     wgi_piracy["geo_risk"] = wgi_piracy["geo_risk"].map(lambda x: 100 -x)
     wgi_piracy["sea_risk"] = wgi_piracy["sea_risk"].map(lambda x: 100 -x)
-
 
     wgi_piracy.drop(wgi_piracy.columns[2:10],axis=1,inplace=True)
 
@@ -94,9 +91,9 @@ def corridor_failure(conn, java_input_csv, year):
     where_clause = "year=%s" % repr(year)
     geo_risk,_ = get_values(conn,'geo_risk',where=where_clause)
 
+    corridor_failure = pd.DataFrame(columns=['corridor_id','pipeline_id','corridor_failure_captive','corridor_failure_no_captive', 'year'])
 
     for _, row in corridor.iterrows():
-        corridor_failure = pd.DataFrame(columns=['corridor_id','pipeline_id','corridor_failure_captive','corridor_failure_no_captive'])
         #WEIGHTS!!!
         corridor_name = row['RouteName']
         id = get_values_simple(conn,'corridor',['corridor_id'],'corridor_name=%s' % corridor_name)
@@ -106,7 +103,6 @@ def corridor_failure(conn, java_input_csv, year):
         sea_branch['type'] = 'sea'
         total_length = sea_branch['length'].sum()
         sea_branch['weight_without_captive'] = sea_branch['length'].div(total_length)
-
         #Calculate CK Risk
         #Find Chokepoints in the route.
         ck, count = get_values(conn, 'corridor_ck', where="corridor_id=%s" % repr(corridor_id))
@@ -144,16 +140,16 @@ def corridor_failure(conn, java_input_csv, year):
             produtoria_captive = risk['productoria_captive'].product()
             produtoria_no_captive = risk['productoria_without_captive'].product()
 
-            result_captive = (1-produtoria_captive) * ck_risk
-            result_no_captive = (1-produtoria_no_captive) * ck_risk
+            result_captive = (1-produtoria_captive) * (1-ck_risk)
+            result_no_captive = (1-produtoria_no_captive) *(1 - ck_risk)
             
-            new_row = {'corridor_id': corridor_id, 'pipeline_id':pipeline_id  ,'corridor_failure_captive': result_captive, 'corridor_failure_no_captive': result_no_captive}
+            new_row = {'corridor_id': corridor_id, 'pipeline_id':pipeline_id  ,'corridor_failure_captive': result_captive, 'corridor_failure_no_captive': result_no_captive, 'year': year}
             corridor_failure = corridor_failure.append(new_row, ignore_index=True)
         
-        print(corridor_failure)
+    #print(corridor_failure.head(50))
         #insert_into(conn, 'corridor_failure', corridor_failure)
 
-    return
+    return corridor_failure
 
 
 def risk_single_corridor (conn, route_name ,commodity, start_date, end_date=None): #The Pipeline ID should be pass as argument so the user can choose which route wants
@@ -208,14 +204,12 @@ if __name__ == '__main__':
     connection = connect()
         
     geo_risk_df = geo_risk(connection,'2019')
-    print(geo_risk_df)
-    print(geo_risk_df[geo_risk_df['country']=='Open sea'])
-    print(geo_risk_df[geo_risk_df['country']=='Egypt, Arab Rep.'])
     #insert_into(connection, 'geo_risk', geo_risk_df)
     #x = chokepoint_risk(connection, '2019')
     #print(x.head(50))
     #insert_into(connection,'chokepoint_risk',x)
-    #corridor_failure(connection,'java_input.csv', '2019')
+    cf = corridor_failure(connection,'java_input.csv', '2019')
+    print(cf.head(60))
     #risk_single_corridor(connection,'Ceyhan-Trieste','Non Heat Crude', '2020-09-15')
     
     ###### TEST SANITATION STRINGS IN QUERYS########################
