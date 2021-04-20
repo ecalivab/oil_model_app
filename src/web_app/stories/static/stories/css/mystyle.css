@@ -2,6 +2,12 @@
     height: 100%;
 }
 
+.message-login {
+    margin: auto;
+    text-align: center;
+    margin-top: 25px;
+}
+
 .bg-custom{
     background:#1414ed;
 }

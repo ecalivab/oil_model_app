@@ -48,11 +48,19 @@
                 </ul>
               </li>
             </ul>
-            <ul class="navbar-nav ms-auto">
+            {% if request.user.is_authenticated %}
+              <ul class="navbar-nav ms-auto">
+                  <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'logout' %}">Log Out</a>  
+                  </li>
+              </ul>
+            {% else %}
+              <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'login' %}">Log In/Sign Up</a>
+                  <a class="nav-link active" href="{% url 'login' %}">Log In/Sign Up</a>
                 </li>
             </ul>
+            {%endif%}
           </div>
         </div>
         </div>

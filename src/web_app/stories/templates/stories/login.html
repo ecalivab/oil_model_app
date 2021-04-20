@@ -2,16 +2,21 @@
 {% load static %}
 
 {% block content %}
+    <div>
+        {% for message in messages %}
+        <h3 class="text-primary message-login" >{{message}}</h3> 
+    {% endfor %}		
+    </div>
     <div class="container login-container">
         <div class="col-md-7 login-form-2">
             <h1>Login</h1>
-            <form>
+            <form method="POST"> {% csrf_token%}
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Your Email *" value="" />
+                    <input name="username" type="text" class="form-control" placeholder="Your Email *" value="" />
                     <br>
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-control" placeholder="Your Password *" value="" />
+                    <input name="passwd" type="password" class="form-control" placeholder="Your Password *" value="" />
                     <br>
                 </div>
                 <div class="form-group">
@@ -27,6 +32,7 @@
                     <br>
                     <a href="{% url 'sign_up'%}" class="SignUp" value="Login">Sign Up?</a>
                 </div>
+                <input type="hidden" name=flag value="logIn"/>
             </form>
         </div>
     </div>

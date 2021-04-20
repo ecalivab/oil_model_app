@@ -2,7 +2,11 @@
 {% load static %}
 
 {% block content %}
-    <h2 class="h2-pad">Your Stories</h1>
+    {% if request.user.is_authenticated %}
+        <h2 class="h2-pad">Welcome {{request.user.first_name}}: Your Stories</h1>
+    {% else %}
+        <h2 class="h2-pad">Welcome Guest: Your Stories</h1>
+    {%endif%}
     <div class="container pt-4">
         <div class="row row-cols-3">
             <div class="col-4">

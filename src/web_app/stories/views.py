@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.http import JsonResponse
 from plotly.offline import plot
-import plotly.graph_objs as go
-from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
+from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh , Profile
 from utils.utils_plot import *
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 
-from django.db.models import Sum
 # Create your views here.
 
 def home_view (request):
@@ -14,19 +15,51 @@ def home_view (request):
     return render(request,'stories/home.html', context)
 
 def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password =request.POST.get('passwd')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('stories_home')
+        else:
+            messages.info(request, 'Username OR password is incorrect')
+
     context={}
     return render(request,'stories/login.html', context )
 
+def logout_view(request):
+	logout(request)
+	return redirect('login')
+
+
 def sign_up_view(request):
+    if request.method == 'POST':
+        if (request.POST.get('flag') == 'signIn' or request.POST.get('name') is not None or request.POST.get('surname') is not None or request.POST.get('email') is not None or request.POST.get('passwd') is not None):
+            user = User.objects.create_user(
+                username=request.POST.get('email'), password=request.POST.get('passwd'), first_name=request.POST.get('name'),
+                last_name=request.POST.get('last_name')
+                )
+            user.profile.type = 'F'
+            user.save()
+
+            messages.success(request, 'Account was created for ' + user.first_name)
+            
+            return redirect('login')
+
     context ={}
     return render(request,'stories/sign_up.html', context)
+
+
 
 def princing_view(request):
     context ={}
     return render(request, 'stories/pricing.html',context)
 
-def story_view (request):
-    
+
+
+def story_view (request):   
     name = None
     if request.method == 'POST':
         print('ENTRE')
@@ -39,7 +72,6 @@ def story_view (request):
         'select_corridor' : name
     }
     
-
     if request.is_ajax():
         q = request.GET.get('term','')
         corridors = Corridor.objects.filter(corridor_name__istartswith=q)
@@ -50,6 +82,8 @@ def story_view (request):
         return JsonResponse(result, safe=False)
 
     return render(request, 'stories/crude_story.html', context)
+
+
 
 def story_ajax_view (request):
     corridor = None
@@ -96,6 +130,7 @@ def load_corridor(request):
         'select'        : "Corridor", 
     }
     return render(request, 'stories/ajax_load.html', context)
+
 
 def load_pipe(request):
     pipelines_names = [] 
