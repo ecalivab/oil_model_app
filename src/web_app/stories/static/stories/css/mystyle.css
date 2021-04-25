@@ -1,7 +1,11 @@
-.html {
+html, body {
     height: 100%;
+    font-family: 'Arial', Helvetica;
 }
 
+.push-bottom {
+    margin-bottom: 5%;
+}
 .message-login {
     margin: auto;
     text-align: center;
@@ -16,7 +20,7 @@
     margin-left: 250px;
 }
 .h2-pad {
-    margin-left: 230px;
+    margin-left: 100px;
     margin-top: 25px;
 }
 .bg-body{
@@ -36,6 +40,77 @@
     border-radius: 0;
     box-sizing: border-box
 }
+
+.about {
+    position: relative;
+    left: 920px;
+    padding-top: 18px;
+    /*border-left: 2px solid #000000;*/
+    background: linear-gradient(to bottom, #1414ed 20%, #05125e 100%, #56aca3 90%);
+}
+
+.about p {
+    padding-top: 20px;
+    color: #fff;
+    font-size: 18px;
+}
+
+.about h3 {
+    color: #fff;
+    text-align: center;
+}
+
+/*FOOTER*/
+
+#titolo_footer {
+    font-size: 20px;
+    display: inline-block;
+    line-height: 1.2em;
+}
+
+.div-foot {
+    padding-left: 130px;
+}
+.footer-dark {
+    padding:1px 0;
+    color:#f0f9ff;
+    /*background-color:#282d32;*/
+    background-color:#1414ed;
+    position: relative;
+    bottom: 0px;
+  }
+  
+  .poli-image3 {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+  .footer-dark h3 {
+    margin-top:0;
+    margin-bottom:12px;
+    font-weight:bold;
+    font-size:16px;
+  }
+  
+  .footer-dark ul {
+    padding:0;
+    list-style:none;
+    line-height:1.6;
+    font-size:14px;
+    margin-bottom:0;
+  }
+  
+  .footer-dark ul a {
+    color:inherit;
+    text-decoration:none;
+    opacity:0.6;
+  }
+  
+  .footer-dark ul a:hover {
+    opacity:0.8;
+  }
 
 /*LOGIN IN */
 .login-container{

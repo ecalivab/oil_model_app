@@ -3,86 +3,95 @@
 
 {% block content %}
     {% if request.user.is_authenticated %}
-        <h2 class="h2-pad">Welcome {{request.user.first_name}}: Your Stories</h1>
+        <h2 class="h2-pad fw-bolder">Welcome {{request.user.first_name}}: Your Stories</h1>
     {% else %}
-        <h2 class="h2-pad">Welcome Guest: Your Stories</h1>
+        <h2 class="h2-pad fw-bolder ">Welcome Guest: Your Stories</h1>
     {%endif%}
-    <div class="container pt-4">
-        <div class="row row-cols-3">
-            <div class="col-4">
-                <div class="card bg-card" style="width: 22rem;">
-                    <img src="{% static '/stories/images/est_logo.jpg'%}" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">The Story about Crude Oil</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Oil is bad</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="{% url 'story_ajax' %}" class="card-link">Story Time</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="card" style="width: 22rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="card-link">Card link</a>
-                        <a href="#" class="card-link">Another link</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="card" style="width: 22rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="card-link">Card link</a>
-                        <a href="#" class="card-link">Another link</a>
-                    </div>
-                </div>
-            </div>
-        </div>     
-    </div>
 
-    <div class="container pt-4">
-        <div class="row row-cols-3">
-            <div class="col-4">
-                <div class="card" style="width: 22rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">The Story about Crude Oil 2</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Oil is bad</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    <a href="{% url 'story' %}" class="card-link">Story Time</a>
-                    
+    <div class="container-fluid push-bottom" style="padding-left: 50px;">
+        <div class="row pt-4 gx-5">
+          <div class="col-md-3" style="margin-left: 5px;">
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+              <div class="col">
+                <div class="card shadow p-1">
+                  <img src="{% static '/stories/images/oil_orange.jfif'%}" class="card-img-top" alt="..." width="225px" height="175px">
+                  <div class="card-body">
+                    <h4 class="card-title">Crude Imported to Italy</h4>
+                    <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <div class="text-center">
+                      <a href="{% url 'story_ajax' %}" class="btn btn-primary" href="#" role="button">Story time</a>
                     </div>
+                  </div>
                 </div>
-            </div>
-            <div class="col-4">
-                <div class="card" style="width: 22rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="card-link">Card link</a>
-                        <a href="#" class="card-link">Another link</a>
+              </div>
+              <div class="col">
+                <div class="card shadow p-1">
+                  <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
+                  <div class="card-body">
+                    <h4 class="card-title">Crude Test</h4>
+                    <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <div class="text-center">
+                      <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
                     </div>
+                  </div>
                 </div>
-            </div>
-            <div class="col-4">
-                <div class="card" style="width: 22rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="card-link">Card link</a>
-                        <a href="#" class="card-link">Another link</a>
+              </div>
+              <div class="col">
+                  <div class="card shadow p-1">
+                      <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
+                      <div class="card-body">
+                        <h4 class="card-title">Crude Test</h4>
+                        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                        <div class="text-center">
+                          <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
+                        </div>
+                      </div>
                     </div>
-                </div>
+              </div>
+              <div class="col">
+                  <div class="card shadow p-1">
+                      <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
+                      <div class="card-body">
+                        <h4 class="card-title">Crude Test</h4>
+                        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                        <div class="text-center">
+                          <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
+                        </div>
+                      </div>
+                    </div>
+              </div>
             </div>
-        </div>     
-    </div>
+          </div>
+          <div class="col-sm-5 border-start border-3 border-primary bg-light about">
+            <h3>Oil Rest Platform</h3>
+            <p>Meet Rest. A data storytelling product that tells your stakeholders what they need to know – and brings the story to them instead of forcing them to go find it.</p>
+          </div>
+     </div>
 
-
-
+    
 {% endblock content%}
+
+
+{% block footer %}
+    <div class="container-fluid footer-dark">
+        <footer>
+            <div class="div-foot">
+                <div class="row">
+                    <div class="col-ms-6 col-md-3 item ms-left">
+                        <img class="poli-image" src="{% static '/stories/images/logo_poli.svg'%}" alt="" width="250" height="250" >
+                    </div>
+                    <div class="col-md-4 col-md-3 item" style="padding-top: 70px;">
+                        <p class="px-5">
+                            <span id="titolo_footer">Politecnico di Torino</span><br/>
+                            Corso Duca degli Abruzzi, 24<br/>
+                            10129 Torino, ITALY<br/>
+                            P.IVA/C.F.: 00518460019
+                        </p>
+                    </div>
+                    </div>
+            </div>
+        </footer>
+    </div>
+{% endblock footer%}
+
+      
