@@ -4,7 +4,7 @@
 
 {% block header %}
     <div class="container-fluid bg-light">
-        <h1 class="h1-left pt-3">Amazing Crude Story</h1>
+        <h1 class="h1-left">Amazing Crude Story</h1>
         <div class="btn-group btn-block">
           <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
               <select class="text-center" id="sel_country" name="load_country">
@@ -20,7 +20,7 @@
                 <option value="" selected disabled hidden>--Select Pipeline--</option>
               </select>
               <input type="text" name="daterange" value="01/01/2020 - 01/02/2020" />   
-              <button type="submit" class="btn btn-outline-info">Filter</button>                  
+              <button type="submit" class="btn btn-outline-primary">Filter</button>                  
           </form>
       </div>
       
@@ -79,37 +79,39 @@
 
 {% block content %}
 
-<div class="container-md bg-s">
-    <!-- Stack the columns on mobile by making one full-width and the other half-width -->
-    <div class="row">
-      <div class="col-md-7">
-        <p class="py-3">In 2020 in Italy were discharged <X> tons of crude, % with respect to the previous year 
-          italian crude ports are <X> (5 most important ports)   
+<div style="padding: 0px 10px 10px 2px;">
+  <div class="container-fluid-md bg-white">
+      <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+      <div class="row">
+        <div class="col-md-8">
+          <p class="py-3 px-3">In 2020 in Italy were discharged <X> tons of crude, % with respect to the previous year 
+            italian crude ports are <X> (5 most important ports)   
 
-        </p>
-        <div class="container">
-          {% autoescape off %}
-            {{ plot_div }}
-          {% endautoescape %}
+          </p>
+          <div class="container">
+            {% autoescape off %}
+              {{ plot_div }}
+            {% endautoescape %}
+          </div>
+          
         </div>
-        
-      </div>
-      <div class="col-6 col-md-5 bg-card">
-          Side Bar
-          <br>
-          {% if select_corridor %}
-            <p>Corridor Name is {{select_corridor.corridor_name}} !!!</p>
-            <div class="container">
-              {% autoescape off %}
-                {{ bar_div }}
-              {% endautoescape %}
-            </div>
-          {%else%}
-            <p>Corridor Not Selected</p>
-          {%endif%}
+        <div class="col-md-4 bg-side">
+            Side Bar
+            <br>
+            {% if select_corridor %}
+              <p>Corridor Name is {{select_corridor.corridor_name}} !!!</p>
+              <div class="container">
+                {% autoescape off %}
+                  {{ bar_div }}
+                {% endautoescape %}
+              </div>
+            {%else%}
+              <p>Corridor Not Selected</p>
+            {%endif%}
 
-          <p>Poner aqui cosas interactivas</p>
+            <p>Poner aqui cosas interactivas</p>
+        </div>
       </div>
-    </div>
-
+  </div>
+</div>
 {% endblock content%}

@@ -32,10 +32,13 @@
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active fs-3" aria-current="page" href="{% url 'stories_home' %}">Home</a>
+                <a class="nav-link active fs-4" aria-current="page" href="{% url 'stories_home' %}">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active fs-3" href="{% url 'pricing' %}">Pricing</a>
+                <a class="nav-link active fs-4" href="{% url 'pricing' %}">Pricing</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active fs-4" href="{% url 'contact' %}">Request Story/Enhacement</a>
               </li>
             </ul>
             {% if request.user.is_authenticated %}
@@ -59,7 +62,7 @@
     <div class="container-fluid">
         {% block header %}{% endblock header %}
     </div>
-    <div class="container-fluid pt-2">
+    <div class="container-fluid">
         {% block content %}{% endblock content %}
     </div>
     

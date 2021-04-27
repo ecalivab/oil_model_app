@@ -1,18 +1,46 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from django.db.models import Q
 from django.http import JsonResponse
 from plotly.offline import plot
+from .forms import ContactForm
 from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh , Profile
 from utils.utils_plot import *
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.core.mail import send_mail, BadHeaderError
 
 # Create your views here.
 
 def home_view (request):
     context ={}
     return render(request,'stories/home.html', context)
+
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            subject = "Website Inquiry" 
+            body = {
+                'first_name': form.cleaned_data['first_name'], 
+			    'last_name': form.cleaned_data['last_name'], 
+			    'email': form.cleaned_data['email_address'], 
+			    'message':form.cleaned_data['message'], 
+			    }
+            message = "\n".join(body.values())
+            
+            try:
+                send_mail(subject, message, 'admin@example.com', ['admin@example.com']) 
+            except BadHeaderError:
+                return HttpResponse('Invalid header found.')
+            
+            return redirect ("stories_home")
+
+    form = ContactForm()
+    context ={
+        'form': form,
+    }
+    return render(request, 'stories/contact.html', context)
 
 def login_view(request):
     if request.method == 'POST':

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import story_view, home_view ,story_ajax_view , load_corridor , load_pipe, login_view, sign_up_view, princing_view, logout_view
+from .views import story_view, home_view ,story_ajax_view , load_corridor , load_pipe, login_view, sign_up_view, princing_view, logout_view , contact_view
 
 urlpatterns = [
     path('', home_view, name='stories_home'),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('sign_up/', sign_up_view, name='sign_up'),
     path('logout/', logout_view, name='logout'),
     path('pricing/', princing_view, name='pricing'),
+    path('contact/', contact_view, name='contact'),
 ]

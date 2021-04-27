@@ -8,10 +8,10 @@
         <h2 class="h2-pad fw-bolder ">Welcome Guest: Your Stories</h1>
     {%endif%}
 
-    <div class="container-fluid push-bottom" style="padding-left: 50px;">
-        <div class="row pt-4 gx-5">
+    <div class="container-fluid push-bottom cards-home" style="padding-left: 50px;">
+        <div class="row row-card pt-4 gx-5">
           <div class="col-md-3" style="margin-left: 5px;">
-            <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="row row-card row-cols-1 row-cols-md-2 g-4">
               <div class="col">
                 <div class="card shadow p-1">
                   <img src="{% static '/stories/images/oil_orange.jfif'%}" class="card-img-top" alt="..." width="225px" height="175px">
@@ -28,7 +28,7 @@
                 <div class="card shadow p-1">
                   <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
                   <div class="card-body">
-                    <h4 class="card-title">Crude Test</h4>
+                    <h4 class="card-title">Crude Test 2</h4>
                     <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
                     <div class="text-center">
                       <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
@@ -40,7 +40,7 @@
                   <div class="card shadow p-1">
                       <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
                       <div class="card-body">
-                        <h4 class="card-title">Crude Test</h4>
+                        <h4 class="card-title">Crude Test 1</h4>
                         <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
                         <div class="text-center">
                           <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
@@ -52,7 +52,7 @@
                   <div class="card shadow p-1">
                       <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
                       <div class="card-body">
-                        <h4 class="card-title">Crude Test</h4>
+                        <h4 class="card-title">Crude Test 3</h4>
                         <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
                         <div class="text-center">
                           <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
@@ -60,11 +60,25 @@
                       </div>
                     </div>
               </div>
+              
+              <div class="col">
+                <div class="card shadow p-1">
+                    <img src="{% static '/stories/images/crude_oil.jpg'%}" class="card-img-top" alt="..." width="225px" height="175px">
+                    <div class="card-body">
+                      <h4 class="card-title">Crude Test 5</h4>
+                      <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                      <div class="text-center">
+                        <a href="{% url 'story' %}" class="btn btn-primary" href="#" role="button">Story time</a>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+
             </div>
           </div>
-          <div class="col-sm-5 border-start border-3 border-primary bg-light about">
+          <div class="col-sm-5 about">
             <h3>Oil Rest Platform</h3>
-            <p>Meet Rest. A data storytelling product that tells your stakeholders what they need to know – and brings the story to them instead of forcing them to go find it.</p>
+            <p>Meet Rest. A data storytelling product that tells your customers what they need to know – and brings the story to them instead of forcing them to go find it.</p>
           </div>
      </div>
 

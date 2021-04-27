@@ -30,16 +30,17 @@ html, body {
     background-color: #f0e3da;
 }
 
+.bg-side{
+    background-color: #e5eef5;
+}
+
 .bg-s{
     background-color: #f1f1f1;
 }
 
-.row {
+.row-card {
     width: 1200px;
-    border: none;
-    border-radius: 0;
-    box-sizing: border-box
-}
+} 
 
 .about {
     position: relative;
@@ -52,7 +53,7 @@ html, body {
 .about p {
     padding-top: 20px;
     color: #fff;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .about h3 {
@@ -165,6 +166,58 @@ html, body {
     font-size: 30px;
     text-decoration: none;
 }
+
+
+/*Contact */
+.contact-container{
+    margin:auto;
+    /*border: 5px solid #FFFF00;*/
+    margin-top: 2%; 
+    width:90%;
+}
+
+.contact-form-2{
+    margin: auto;
+    width: 57%;
+    padding: 7%;
+    padding-top: 2%;
+    padding-bottom: 3%;
+    /*background: #0062cc;
+    background: linear-gradient(to bottom, #177b8f 50%, #05445E 100%, #56aca3 80%);*/
+    background: linear-gradient(to bottom, #1414ed 20%, #05125e 100%, #56aca3 90%);
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+.contact-form-2 h1{
+    text-align: center;
+    color: #fff;
+    font-size: 55px;
+    font-weight: 800;
+}
+
+.contact-form-2 h2 {
+    text-align: center;
+    color: #fff;
+    font-size: 25px;
+}
+
+.contact-container form{
+    padding: 5%;
+}
+.btnSubmit
+{   
+    width: 30%;
+    border-radius: 1rem;
+    padding: 1.5%;
+    border: none;
+    cursor: pointer;
+}
+
+.contact-form-2 .btnSubmit{
+    font-weight: 600;
+    color: #0062cc;
+    background-color: #fff;
+}
+
 
 /* SIGN UP */
 

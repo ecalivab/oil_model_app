@@ -279,6 +279,8 @@ def world_choropleth_map (df_corridor, df_intake):
 
     fig.update_layout(
         title_text='Crude Intake by Country',
+        width=950,
+        height=600,
         geo=dict(
             showframe=False,
             showcoastlines=False,
@@ -313,7 +315,7 @@ def intake_corridor_barplot(intake, lvh):
     '''
     barplot = go.Figure([go.Bar(x=df['name'], y=df['intake'],
                         name='test',
-                        opacity=0.8, marker_color='green')])
+                        opacity=0.8, marker_color='blue')])
 
     barplot.update_layout(
                         title='Total Intake per Commodity',
