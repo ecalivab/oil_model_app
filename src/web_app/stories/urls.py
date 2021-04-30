@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import story_view, home_view ,story_ajax_view , load_corridor , load_pipe, login_view, sign_up_view, princing_view, logout_view , contact_view
+from .views import story_view, home_view ,story_ajax_view ,load_corridor , load_pipe, login_view, sign_up_view, princing_view, logout_view , contact_view, activate_view
 
 urlpatterns = [
     path('', home_view, name='stories_home'),
@@ -12,4 +12,5 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('pricing/', princing_view, name='pricing'),
     path('contact/', contact_view, name='contact'),
+    path('activate/<uidb64>/<token>/', activate_view, name='activate'),  
 ]

@@ -2,21 +2,16 @@
 {% load static %}
 
 {% block content %}
-    <div>
-        {% for message in messages %}
-        <h3 class="text-primary message-login" >{{message}}</h3> 
-    {% endfor %}		
-    </div>
     <div class="container login-container">
         <div class="col-md-7 login-form-2">
             <h1>Login</h1>
             <form method="POST"> {% csrf_token%}
                 <div class="form-group">
-                    <input name="username" type="text" class="form-control rounded-1" placeholder="Your Email *" value="" />
+                    {{form.username}}
                     <br>
                 </div>
                 <div class="form-group">
-                    <input name="passwd" type="password" class="form-control rounded-1" placeholder="Your Password *" value="" />
+                    {{form.passwd}}
                     <br>
                 </div>
                 <div class="form-group">
@@ -34,6 +29,20 @@
                 </div>
                 <input type="hidden" name=flag value="logIn"/>
             </form>
+            <div class="container">
+                {% for msg in messages %}
+                    {% if msg.tags == 'error' %}
+                        <div class="alert alert-danger" role="alert">
+                            <p style="font-size: 20px; font-weight: 600;">{{ msg }}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success" role="alert">
+                            <p style="font-size: 20px; font-weight: 600;">{{ msg }}</p>
+                        </div>
+                       
+                    {% endif %}
+                {% endfor %}		
+            </div>
         </div>
     </div>
 {% endblock content%}

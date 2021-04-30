@@ -2,13 +2,19 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.db.models import Q
 from django.http import JsonResponse
 from plotly.offline import plot
-from .forms import ContactForm
-from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh , Profile
+from .forms import ContactForm, SignUpForm, LogInForm
+from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
 from utils.utils_plot import *
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import send_mail, BadHeaderError, EmailMessage
+
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 
 # Create your views here.
 
@@ -44,17 +50,20 @@ def contact_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password =request.POST.get('passwd')
-        user = authenticate(request, username=username, password=password)
+        form = LogInForm(request.POST)
+        if form.is_valid():
+            username =  form.cleaned_data['username']
+            password = form.cleaned_data['passwd']
+            user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
             return redirect('stories_home')
         else:
-            messages.info(request, 'Username OR password is incorrect')
-
-    context={}
+            messages.error(request, 'Username OR password is incorrect')
+            
+    form = LogInForm()
+    context ={'form': form}
     return render(request,'stories/login.html', context )
 
 def logout_view(request):
@@ -64,21 +73,64 @@ def logout_view(request):
 
 def sign_up_view(request):
     if request.method == 'POST':
-        if (request.POST.get('flag') == 'signIn' or request.POST.get('name') is not None or request.POST.get('surname') is not None or request.POST.get('email') is not None or request.POST.get('passwd') is not None):
-            user = User.objects.create_user(
-                username=request.POST.get('email'), password=request.POST.get('passwd'), first_name=request.POST.get('name'),
-                last_name=request.POST.get('last_name')
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            try:
+                user = User.objects.create_user(
+                    username = form.cleaned_data.get('email'),
+                    password = form.cleaned_data.get('password1'),
+                    first_name = form.cleaned_data.get('first_name'),
+                    last_name = form.cleaned_data.get('last_name')
                 )
-            user.profile.type = 'F'
-            user.save()
+                user.profile.type = 'F'
+                user.is_active = False
+                user.save()
 
-            messages.success(request, 'Account was created for ' + user.first_name)
+                current_site = get_current_site(request)
+                mail_subject = 'Activate your account.'
+                message = render_to_string('stories/account_activation_email.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user),
+                 })
+                to_email = form.cleaned_data.get('email')
+                email = EmailMessage(
+                    mail_subject, message, to=[to_email]
+                )
+                email.send()
+
+               
+                messages.success(request, 'Account was created for ' + user.first_name + ' Please confirm your email address to complete the registration')
+                return redirect('login')
+
+            except:
+                 messages.error(request, "User already Exist!")
+                 return render(request = request, template_name = 'stories/sign_up.html', context={'form':form})
+        else:
+            for msg in form.error_messages:
+                messages.error(request, f"{msg}: {form.error_messages[msg]}")
             
-            return redirect('login')
+            return render(request = request, template_name = 'stories/sign_up.html', context={'form':form})
 
-    context ={}
+    form = SignUpForm()
+    context={ 'form': form}
     return render(request,'stories/sign_up.html', context)
 
+def activate_view (request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request,'Thank you for your email confirmation. Now you can login your account.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Activation link is invalid!' )
+        return redirect('login')
 
 
 def princing_view(request):
