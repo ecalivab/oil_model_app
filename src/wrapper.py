@@ -33,7 +33,7 @@ approx_pipeline_file = '../input_data_spreadsheet/surface_area_country.xls'
 
 flag_insert_wgi = 0
 wgi_file = "../input_data_spreadsheet/wgidataset.xlsx"
-wgi_year = 2019
+wgi_year = 2018
 
 flag_insert_piracy = 0
 piracy_file = '../input_data_spreadsheet/2019 Stable Seas Index Data(OEF).xlsx'
@@ -46,7 +46,7 @@ flag_ck_risk = 0
 ck_risk_year = 2019
 
 flag_intake = 1
-alphatanker_file = '../input_data_spreadsheet/4_export_prova_alph.xlsx'
+alphatanker_file = '../input_data_spreadsheet/alphatanker_files/2021/01_04-30_04 alphatanker.xlsx'
 
 #########################-----ADAPT-----######################################
 def addapt_numpy_float64(numpy_float64):
@@ -194,11 +194,13 @@ if flag_intake == 1:
     print("------Insert into Corridor Intake-------")
     for _, row in alpha_df.iterrows():
         corridor_name = row['load_port'] + "-" + row['discharge_port']
+        corridor_name = corridor_name.replace("'"," ")  #Some corridors has a ' like N'Kossa that get values cannot process. Replace with a blank space
         where_clause = "corridor_name=%s" % repr(corridor_name)
         id,_ = get_values(conn, 'corridor','corridor_id', where_clause)
         where_clause = "name=%s" % repr(row['commodity'])
         com_df,_ = get_values(conn,'commodity_lvh','commodity_id',where_clause)
         id['commodity_id'],id['intake'], id['date'], = [com_df['commodity_id'], row['intake'], row['date']]
+        print(id.head(5))
         insert_corridor_intake(conn, 'corridor_intake', id)
 
     #LVH does not has the name of alphatanker

@@ -104,7 +104,8 @@ def compute_routes_length(route_shp):
         if(international_waters >= 200):
             row = {'RouteName': route_l,'SOVEREIGN1': 'Open sea','length': international_waters, 'geometry': 'NONE'}
             final_df = final_df.append(row, ignore_index=True)
-
+            
+        final_df.to_csv('route_lenght_debug.csv',mode='a',index=False)
         route_length_df = route_length_df.append(final_df, ignore_index = True) 
         
 

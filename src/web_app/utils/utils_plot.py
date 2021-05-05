@@ -256,71 +256,108 @@ country_code_dict = {
 }
 
 def world_choropleth_map (df_corridor, df_intake):
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Crude Intake by Country',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['load_country']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
 
-    df_intake.columns = ['corridor_id', 'intake']
-    df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
-    df =df.drop(['corridor_id'], axis = 1)
-    df = df.groupby(['load_country']).sum().reset_index()
+        df['code'] = df['load_country'].map(country_code_dict,'ignore')
+        fig = go.Figure(data=go.Choropleth(
+            locations = df['code'],
+            z = df['intake'],
+            text = df['load_country'],
+            colorscale = 'Blues',
+            autocolorscale=False,
+            reversescale=True,
+            marker_line_color='darkgray',
+            marker_line_width=0.5,
+            colorbar_tickprefix = '',
+            colorbar_title = 'Crude Intake (Tons)',
+        ))
 
-    df['code'] = df['load_country'].map(country_code_dict,'ignore')
-    
-    fig = go.Figure(data=go.Choropleth(
-        locations = df['code'],
-        z = df['intake'],
-        text = df['load_country'],
-        colorscale = 'Blues',
-        autocolorscale=False,
-        reversescale=True,
-        marker_line_color='darkgray',
-        marker_line_width=0.5,
-        colorbar_tickprefix = '',
-        colorbar_title = 'Crude Intake (Tons)',
-    ))
-
-    fig.update_layout(
-        title_text='Crude Intake by Country',
-        width=950,
-        height=600,
-        geo=dict(
-            showframe=False,
-            showcoastlines=False,
-            projection_type='equirectangular'
-        ),
-        annotations = [dict(
-            x=0.55,
-            y=0.1,
-            xref='paper',
-            yref='paper',
-            text='',
-            showarrow = False
-        )]
-    )
+        fig.update_layout(
+            title_text='Crude Intake by Country',
+            width=950,
+            height=600,
+            geo=dict(
+                showframe=False,
+                showcoastlines=False,
+                projection_type='equirectangular'
+            ),
+            annotations = [dict(
+                x=0.55,
+                y=0.1,
+                xref='paper',
+                yref='paper',
+                text='',
+                showarrow = False
+            )]
+        )
 
     return fig
     
 
 def intake_corridor_barplot(intake, lvh):
-    intake.columns = ['commodity_id', 'intake']
-    print(intake.head(50))
-    df =  pd.merge(intake,lvh,on=['commodity_id'],how="inner",indicator=True)
-    print(df.head(50))
-    df = df.groupby(['name']).sum().reset_index()
-    print(df.head(10))
-    '''
-    data = list(CorridorIntake.objects.values_list('commodity').annotate(Sum('intake'))) #Return a tumple of (commodity, sum)
-    x_data, y_data = [list(c) for c in zip(*data)] #Separete x and y data by commodity and sum(intake)
-    #x_data = [str(int) for int in x_data]
+    if intake.empty:
+         barplot = go.Figure()
+         barplot.update_layout(
+                            title='Total Intake per Commodity',
+                            width = 500,
+                            height = 500,
+                            annotations = [
+                                {   
+                                    "text": "Not Data",
+                                    "xref": "paper",
+                                    "yref": "paper",
+                                    "showarrow": False,
+                                    "font": {"size": 28}
+                                }
+                            ]
+                        )
+    else:
+        intake.columns = ['commodity_id', 'intake']
+        print(intake.head(50))
+        df =  pd.merge(intake,lvh,on=['commodity_id'],how="inner",indicator=True)
+        print(df.head(50))
+        df = df.groupby(['name']).sum().reset_index()
+        print(df.head(10))
+        '''
+        data = list(CorridorIntake.objects.values_list('commodity').annotate(Sum('intake'))) #Return a tumple of (commodity, sum)
+        x_data, y_data = [list(c) for c in zip(*data)] #Separete x and y data by commodity and sum(intake)
+        #x_data = [str(int) for int in x_data]
 
-    x_data = [CommodityLvh.objects.values_list('name').filter(commodity_id=int)[0][0] for int in x_data] #Query returns a tuple Queryset[(name, )] 
-    '''
-    barplot = go.Figure([go.Bar(x=df['name'], y=df['intake'],
-                        name='test',
-                        opacity=0.8, marker_color='blue')])
+        x_data = [CommodityLvh.objects.values_list('name').filter(commodity_id=int)[0][0] for int in x_data] #Query returns a tuple Queryset[(name, )] 
+        '''
+        barplot = go.Figure([go.Bar(x=df['name'], y=df['intake'],
+                            name='test',
+                            opacity=0.8, marker_color='blue')])
 
-    barplot.update_layout(
-                        title='Total Intake per Commodity',
-                        width = 500,
-                        height = 500,
-                    )
+        barplot.update_layout(
+                            title='Total Intake per Commodity',
+                            width = 500,
+                            height = 500,
+                        )
     
     return barplot

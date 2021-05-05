@@ -5,6 +5,8 @@ from plotly.offline import plot
 from .forms import ContactForm, SignUpForm, LogInForm
 from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
 from utils.utils_plot import *
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -168,24 +170,43 @@ def story_view (request):
 def story_ajax_view (request):
     corridor = None
     bar_div = None
+    current_date = datetime.today().strftime('%m/%d/%Y')
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    year = current_date.split("/")[2]
+    first_date = "01/01/%s" % year
+    start_date = "%s-01-01" % year
+
     if request.method == 'POST':
         id = request.POST.get('corridor_id')
         corridor = Corridor.objects.filter(corridor_id=id).first()
         pipeline = request.POST.get('pipe_id')
         daterange = request.POST.get('daterange')
+
+        #Fix date formats to make them compatible 
+        daterange = daterange.split("-")
+        end_date = daterange[1].strip()
+        current_date = end_date
+        end_date = datetime.strptime(end_date, '%m/%d/%Y')
+        start_date = daterange[0].strip()
+        first_date= start_date
+        start_date = datetime.strptime(start_date, '%m/%d/%Y')
+        end_date = end_date.strftime('%Y-%m-%d')
+        start_date = start_date.strftime('%Y-%m-%d')
+
         #BarPlot
         corridor_intake = pd.DataFrame.from_records(
-            CorridorIntake.objects.filter(corridor=id).values('commodity','intake'))
+            CorridorIntake.objects.filter(corridor=id, date__lte=end_date, date__gte=start_date).values('commodity','intake'))
         lhv = pd.DataFrame.from_records(
             CommodityLvh.objects.all().values('commodity_id', 'name'))
         
         bar = intake_corridor_barplot(corridor_intake, lhv)
         bar_div = plot(bar, output_type='div' )
 
+   
     #World Map Color Plot
     corridor_df = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
     intake_df =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake')) #missing filter per date?
+        CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date')) #missing filter per date?
 
     fig = world_choropleth_map(corridor_df, intake_df)
     world_plot_div = plot(fig, output_type='div')
@@ -194,14 +215,15 @@ def story_ajax_view (request):
         'corridors' : Corridor.objects.all().distinct('load_country'),
         'select_corridor' : corridor,
         'plot_div': world_plot_div, 
-        'bar_div': bar_div,     
+        'bar_div': bar_div,
+        'curr_date': current_date,
+        'start_date': first_date,     
     }
 
     return render(request, 'stories/crude_ajax.html', context)
 
 
 def load_corridor(request):
-    print('Aqui estoy')
     print(request.GET)
     l_country = request.GET.get('country')
     SubCategory = Corridor.objects.filter(load_country__startswith=l_country)#.order_by('name')

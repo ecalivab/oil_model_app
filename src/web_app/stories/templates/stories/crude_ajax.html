@@ -19,7 +19,7 @@
               <select class="text-center" id="sel_pipe" name="pipe_id">
                 <option value="" selected disabled hidden>--Select Pipeline--</option>
               </select>
-              <input type="text" name="daterange" value="01/01/2020 - 01/02/2020" />   
+              <input type="text" name="daterange" value="{{start_date}} - {{curr_date}}" />   
               <button type="submit" class="btn btn-outline-primary">Filter</button>                  
           </form>
       </div>
@@ -57,10 +57,9 @@
         $('input[name="daterange"]').daterangepicker({
           showDropdowns: true,
           opens: 'center',
-          format: 'DD/MM/YYYY'
+          format: 'YYYY-MM-DD'
         }, function(start, end, label) {
           console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-          /*
           $.ajax({ 
             data: {
               'start_date': start.format('YYYY-MM-DD'),
@@ -68,7 +67,7 @@
             }
             
           })
-            */  //alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'))     
+             //alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'))     
         });
       });
 
