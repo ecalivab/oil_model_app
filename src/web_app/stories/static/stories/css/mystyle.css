@@ -17,7 +17,7 @@ html, body {
 }
 
 .h1-left{
-    margin-left: 250px;
+    margin-left: 150px;
 }
 .h2-pad {
     margin-left: 100px;
@@ -135,6 +135,19 @@ html, body {
     color: #fff;
     font-size: 55px;
     font-weight: 800;
+}
+
+.login-form-2 h3{
+    text-align: center;
+    color: #fff;
+    font-size: 40px;
+    font-weight: 800;
+}
+
+.login-form-2 p{
+    color: #fff;
+    font-size: 20px;
+    font-weight: 400;
 }
 
 .login-container form{

@@ -361,3 +361,6 @@ def intake_corridor_barplot(intake, lvh):
                         )
     
     return barplot
+
+
+

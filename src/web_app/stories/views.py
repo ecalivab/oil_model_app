@@ -5,6 +5,7 @@ from plotly.offline import plot
 from .forms import ContactForm, SignUpForm, LogInForm
 from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
 from utils.utils_plot import *
+from utils.utils_query import *
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -66,7 +67,7 @@ def login_view(request):
             
     form = LogInForm()
     context ={'form': form}
-    return render(request,'stories/login.html', context )
+    return render(request,'stories/users/login.html', context )
 
 def logout_view(request):
 	logout(request)
@@ -82,7 +83,8 @@ def sign_up_view(request):
                     username = form.cleaned_data.get('email'),
                     password = form.cleaned_data.get('password1'),
                     first_name = form.cleaned_data.get('first_name'),
-                    last_name = form.cleaned_data.get('last_name')
+                    last_name = form.cleaned_data.get('last_name'),
+                    email = form.cleaned_data.get('email')
                 )
                 user.profile.type = 'F'
                 user.is_active = False
@@ -90,7 +92,7 @@ def sign_up_view(request):
 
                 current_site = get_current_site(request)
                 mail_subject = 'Activate your account.'
-                message = render_to_string('stories/account_activation_email.html', {
+                message = render_to_string('stories/users/account_activation_email.html', {
                     'user': user,
                     'domain': current_site.domain,
                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -108,16 +110,16 @@ def sign_up_view(request):
 
             except:
                  messages.error(request, "User already Exist!")
-                 return render(request = request, template_name = 'stories/sign_up.html', context={'form':form})
+                 return render(request = request, template_name = 'stories/users/sign_up.html', context={'form':form})
         else:
             for msg in form.error_messages:
                 messages.error(request, f"{msg}: {form.error_messages[msg]}")
             
-            return render(request = request, template_name = 'stories/sign_up.html', context={'form':form})
+            return render(request = request, template_name = 'stories/users/sign_up.html', context={'form':form})
 
     form = SignUpForm()
     context={ 'form': form}
-    return render(request,'stories/sign_up.html', context)
+    return render(request,'stories/users/sign_up.html', context)
 
 def activate_view (request, uidb64, token):
     try:
@@ -183,15 +185,7 @@ def story_ajax_view (request):
         daterange = request.POST.get('daterange')
 
         #Fix date formats to make them compatible 
-        daterange = daterange.split("-")
-        end_date = daterange[1].strip()
-        current_date = end_date
-        end_date = datetime.strptime(end_date, '%m/%d/%Y')
-        start_date = daterange[0].strip()
-        first_date= start_date
-        start_date = datetime.strptime(start_date, '%m/%d/%Y')
-        end_date = end_date.strftime('%Y-%m-%d')
-        start_date = start_date.strftime('%Y-%m-%d')
+        start_date, end_date, current_date, first_date = fix_time_format(daterange)
 
         #BarPlot
         corridor_intake = pd.DataFrame.from_records(
@@ -206,10 +200,14 @@ def story_ajax_view (request):
     #World Map Color Plot
     corridor_df = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
     intake_df =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date')) #missing filter per date?
+        CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
     fig = world_choropleth_map(corridor_df, intake_df)
     world_plot_div = plot(fig, output_type='div')
+
+    total_intake, variation = total_intake_variable(start_date, end_date)
+    df_ports = get_port_max_intake(start_date, end_date)
+    df_ports = df_ports.to_html(index=False, classes="table table-striped")
 
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
@@ -217,7 +215,10 @@ def story_ajax_view (request):
         'plot_div': world_plot_div, 
         'bar_div': bar_div,
         'curr_date': current_date,
-        'start_date': first_date,     
+        'start_date': first_date, 
+        'total_intake': total_intake,
+        'variation': variation,
+        'df_ports': df_ports,    
     }
 
     return render(request, 'stories/crude_ajax.html', context)

@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.getcwd())  
 
-from math import e
+import logging
 import pandas as pd
 from geopy.geocoders import Nominatim
 
@@ -20,6 +20,9 @@ def read_port_country_file(port_file):
     return port_country
 
 def create_input_file(alphatanker_file):
+
+    logging.basicConfig(filename='java_input_cvs_OSM.log', level=logging.DEBUG)
+
     nom = Nominatim(user_agent="Your_app-name")
     port_country = read_port_country_file("../input_data_spreadsheet/Port_Country.xlsx")
     port_coord = read_port_coordinate_file('../input_data_spreadsheet/coordinatePorti.xls')
@@ -41,13 +44,27 @@ def create_input_file(alphatanker_file):
 
         not_found_flag = 0
 
+        l_port = l_port.replace("'"," ")  #Some corridors has a ' like N'Kossa that get values cannot process. Replace with a blank space
+        d_port = d_port.replace("'"," ")  
+
         #Get the country of the associated port for better accuracy using Nominatim
-  
-        l_country = port_country[port_country['port']==l_port]['country'].values[0]
-        d_country = port_country[port_country['port']==d_port]['country'].values[0]
-               
+        try:
+            l_country = port_country[port_country['port']==l_port]['country'].values[0]
+        except Exception as e:
+            print("Cannot assign load country to port %s: %s" % (l_port ,e))
+            logging.warning("Cannot assign load country to port %s: %s" % (l_port ,e))
+            continue #Continue with next iteration
+
+        try:   
+            d_country = port_country[port_country['port']==d_port]['country'].values[0]
+        except Exception as e:
+            print("Cannot assign discharge country to port %s: %s" % (d_port, e))
+            logging.warning("Cannot assign discharge country to port %s: %s" % (d_port, e))
+            d_country = 'Italy' #Now we are focusing in the import of crude of only Italy
+
         route_name = str(l_port) +"-"+str(d_port)
-        
+
+    
         #Query database for corridor, If corridor doesn't exist it added to the file.
         where_clause = "corridor_name=%s" % repr(route_name)
         _, count = get_values(conn, 'corridor', where=where_clause)
@@ -74,11 +91,13 @@ def create_input_file(alphatanker_file):
                     except:
                         try:
                             print(route_name + ' Looked in file')
+                            logging.info(route_name + ' Looked in file')
                             o_lat = port_coord[port_coord['port']==l_port]['lat'].values[0]
                             o_lon = port_coord[port_coord['port']==l_port]['long'].values[0]
                             cache_ports[l_port] = (o_lat, o_lon)
                         except:
                             print("Port Not Found in Port Coordinates File: " + str(l_port))
+                            logging.warning("Port Not Found in Port Coordinates File: " + str(l_port))
                             not_found_flag = 1
             
             if(d_port in cache_ports.keys()):
@@ -98,11 +117,13 @@ def create_input_file(alphatanker_file):
                     except:
                         try:
                             print(route_name + ' Looked in file')
+                            logging.info(route_name + ' Looked in file')
                             d_lat = port_coord[port_coord['port'] == d_port]['lat'].values[0]
                             d_lon = port_coord[port_coord['port'] == d_port]['long'].values[0]
                             cache_ports[d_port] = (d_lat, d_lon)
                         except:
                             print("Port Not Found in Port Coordinates File: " + str(d_port))
+                            logging.warning("Port Not Found in Port Coordinates File: " + str(d_port))
                             not_found_flag = 1
 
             
@@ -150,12 +171,22 @@ def prepare_java_file(java_csv) -> pd.DataFrame:
 
 if __name__ == '__main__':
     #create_input_file('../input_data_spreadsheet/4_export_prova_alph_2.xlsx')
-    create_input_file('../input_data_spreadsheet/4_export_prova_alph3.xlsx')
+    create_input_file('../input_data_spreadsheet/alphatanker_files/2019/01_01-31_03 alphatanker.xlsx')
     df, pipe_dict = prepare_java_file('java_input.csv')
     print(df.head(60))
 
     for key, value in pipe_dict.items():
         print(key, value)
+
+    '''
+    conn = connect()
+    corridor_name = "N'Kossa Terminal-Leghorn"
+    corridor_name = corridor_name.replace("'"," ")
+    where_clause = "corridor_name=%s" % repr(corridor_name)
+    _, count = get_values(conn, 'corridor', where=where_clause)
+    print(count)
+    close_conn(conn)
+    '''
 
     
     
