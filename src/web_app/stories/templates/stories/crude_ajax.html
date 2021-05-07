@@ -83,10 +83,12 @@
       <!-- Stack the columns on mobile by making one full-width and the other half-width -->
       <div class="row">
         <div class="col-md-8">
-          <p class="py-3 px-3">In 2020 in Italy were discharged <X> tons of crude, % with respect to the previous year 
-            italian crude ports are <X> (5 most important ports)   
-
-          </p>
+          <p class="py-3 px-3" style="font-size: 18px;">Currently so far this year for the period from {{start_date}} to {{curr_date}} {{total_intake}} tons of crude has beed discharged in Italy, with a variation of {{variation}} % with respect to the same dates of previous years.
+          <br></p>
+          <h4 style="margin-left: 20px;">The ports that import more crude are:</h4>
+          <div class="container" style="width:400px; height:300px;">
+            {% autoescape off %}{{df_ports}}{% endautoescape %}
+          </div>
           <div class="container">
             {% autoescape off %}
               {{ plot_div }}
@@ -95,19 +97,16 @@
           
         </div>
         <div class="col-md-4 bg-side">
-            Side Bar
-            <br>
             {% if select_corridor %}
-              <p>Corridor Name is {{select_corridor.corridor_name}} !!!</p>
+              <h3>{{select_corridor.corridor_name}}</h3>
               <div class="container">
                 {% autoescape off %}
                   {{ bar_div }}
                 {% endautoescape %}
               </div>
             {%else%}
-              <p>Corridor Not Selected</p>
+              <h3>Please Select a Corridor </h3>
             {%endif%}
-
             <p>Poner aqui cosas interactivas</p>
         </div>
       </div>
