@@ -9,7 +9,7 @@ import datetime
 from database_driver.database_conn import *
 from calculations.java_input_csv_OSM import create_input_file , prepare_java_file
 from calculations.calculation_route_eez_intersection import compute_routes_length
-from calculations.calculation_risk_model import geo_risk, chokepoint_risk
+from calculations.calculation_risk_model import corridor_failure, geo_risk, chokepoint_risk
 from parsers.parser_strait import parse_strait
 from parsers.parser_pipeline import *
 from parsers.parser_wgi import *
@@ -45,8 +45,11 @@ geo_risk_year = 2019
 flag_ck_risk = 0
 ck_risk_year = 2019
 
-flag_intake = 1
+flag_intake = 0
 alphatanker_file = '../input_data_spreadsheet/alphatanker_files/2021/01_04-30_04 alphatanker.xlsx'
+
+flag_corridor_failure = 1
+corridor_failure_year = 2019
 
 #########################-----ADAPT-----######################################
 def addapt_numpy_float64(numpy_float64):
@@ -203,7 +206,9 @@ if flag_intake == 1:
         print(id.head(5))
         insert_corridor_intake(conn, 'corridor_intake', id)
 
-    #LVH does not has the name of alphatanker
+if flag_corridor_failure == 1:
+    corridor_failure_df = corridor_failure(conn, str(corridor_failure_year))
+    insert_into(conn,'corridor_failure', corridor_failure_df)
 
 flag_test = 0
 

@@ -1,13 +1,18 @@
 from django.urls import path
-from .views import story_view, home_view ,story_ajax_view ,load_corridor , load_pipe, login_view, sign_up_view, princing_view, logout_view , contact_view, activate_view
+from .views import story_view, home_view ,story_ajax_view ,load_corridor , load_pipe, load_port, discharge_port,login_view, sign_up_view, princing_view, logout_view , contact_view, activate_view, story_oil_view
 from django.contrib.auth import views as auth_views
 from .forms import UserPasswordResetForm, UserSetPasswordForm
 urlpatterns = [
     path('', home_view, name='stories_home'),
+
     path('second/', story_view, name='story'),
     path('ajax/', story_ajax_view, name='story_ajax'),
+    path('oil/', story_oil_view, name='story_oil'),
     path('ajax/load_corrdior/', load_corridor, name='ajax_load_corridor'),
     path('ajax/load_pipe/', load_pipe, name='ajax_load_pipe'),
+    path('ajax/load_port/', load_port, name='ajax_load_port'),
+    path('ajax/discharge_port/', discharge_port, name='ajax_discharge_port'),
+
     path('pricing/', princing_view, name='pricing'),
     path('contact/', contact_view, name='contact'),
 

@@ -1,0 +1,166 @@
+{% extends "stories/base.html"%}
+{% load custom_template_tags %}
+
+
+{% block header %}
+    <div class="container-fluid bg-light">
+        <h1 class="h1-left">Amazing Crude Story</h1>
+        <div class="btn-group btn-block">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
+              <select class="text-center" id="sel_country" name="load_country">
+                  <option value="" selected disabled hidden>--Select Load Country--</option>
+                  {% for name in corridors%}
+                      <option class="dropdown-item" value={{name.load_country}}>{{name.load_country}}</option>  
+                  {%endfor%}                 
+              </select> 
+              <select class="text-center" id="sel_load_port" name="load_port">
+                <option value="" selected disabled hidden>--Select Load Port--</option>
+              </select>
+              <select class="text-center" id="sel_discharge_port" name="discharge_port">
+                <option value="" selected disabled hidden>--Select Discharge Port--</option>
+              </select>
+              <select class="text-center" id="sel_pipe" name="pipe_id">
+                <option value="" selected disabled hidden>--Select Pipeline--</option>
+              </select>
+              <select class="text-center" id="sel_year" name="year">
+                <option value="" selected disabled hidden>--Select Year--</option>
+                    {% for year in years%}
+                        <option class="dropdown-item" value={{year.year}}>{{year.year}}</option>  
+                    {%endfor%}                    
+              </select>
+              <button id='filter' type="submit" class="btn btn-primary">Filter</button>      
+          </form>
+      </div>
+      
+    </div>
+    
+    <script>
+      $("#sel_country").change(function () {
+        var country_sel = $(this).val();  // get the selected country ID from the HTML input
+        $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_load_port' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'country': country_sel       // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#sel_load_port").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });  
+      });
+
+      $("#sel_load_port").change(function () {
+        var load_port_sel = $(this).val();  // get the selected country ID from the HTML input
+        $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_discharge_port' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'load_port': load_port_sel       // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#sel_discharge_port").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });
+      });
+
+      $("#sel_discharge_port").change(function () {
+        var corridor_sel = $(this).val();  // get the selected country ID from the HTML input
+        $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_load_pipe' %}",                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'id': corridor_sel       // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#sel_pipe").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });
+      });
+
+      $(document).ready(function () {
+         $('#filter').prop('disabled', true);   // SET THE PROPERTY AFTER THE PAGE HAS LOADED.
+         $('#sel_pipe').change(function(){
+           $('#filter').prop('disabled', false);  
+         });
+         $('#sel_year').change(function(){
+           $('#filter').prop('disabled', false);  
+         });
+      });
+
+    </script>
+
+{% endblock header %}
+
+
+{% block content %}
+
+<div style="padding: 0px 10px 10px 2px;">
+  <div class="container-fluid-md bg-white">
+      <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+      <div class="row">
+        <div class="col-md-8">
+          <p class="py-3 px-3" style="font-size: 18px;">In the year <b>{{year}}</b>, <b>{{total_intake}}</b> Mton of crude were discarged in italian ports <b>{{variation}}</b>% with respect to the previous year. 
+          <br>The main crude suppliers were:</p>
+          <div class="container" style="width:400px; height:200px; position:relative; right:305px; bottom: 15px;">
+            <ol class="list-group list-group-numbered ms-left">
+                {%for supplier in top_suppliers%}
+                    <li class="list-group-item list-group-item-primary"><b>{{supplier}}</b></li>
+                {%endfor%}.
+            </ol>
+           </div>
+           <p class="py-2 px-3" style="font-size: 18px;">
+            {% for key, value in percetages_dict.items %}
+                {% if forloop.first %}  
+                    <b>{{key}}</b> accounted for <b>{{value}}%</b> of total crude delivered in Italy in year {{year}},
+                {%elif forloop.last%}
+                    <b>{{key}}</b> for <b>{{value}}%. </b>
+                {%else%}
+                    <b>{{key}}</b> for <b>{{value}}%, </b>
+                {% endif %}                 
+            {%endfor%}
+           <br>
+           In terms of energy risk: <b>{{risk_dict.max_c}}</b> is the most critic supplier with a total energy risk equal to <b>{{risk_dict.max_r}}</b> Mtoe whereas <b>{{risk_dict.min_c}}</b> has the lowest value of energy risk equal to <b>{{risk_dict.min_r}}</b> Mtoe.
+           </p>
+           <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                {% autoescape off %}
+                    {{ world_plot }}
+                {% endautoescape %}
+              </div>
+              <div class="carousel-item">
+                {% autoescape off %}
+                    {{ intake_bar }}
+                {% endautoescape %}
+              </div>
+              <div class="carousel-item">
+                {% autoescape off %}
+                    {{ piechart }}
+                {% endautoescape %}
+              </div>
+            </div>
+            <button class="carousel-control-prev" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon"  aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+          
+        </div>
+        <div class="col-md-4 bg-side">
+            {% if select_corridor %}
+              <h3>{{select_corridor.corridor_name}}</h3>
+              <div class="container">
+                {% autoescape off %}
+                  {{ bar_div }}
+                {% endautoescape %}
+              </div>
+            {%else%}
+              <h3>Please Select a Corridor </h3>
+            {%endif%}
+            <p>Poner aqui cosas interactivas</p>
+        </div>
+      </div>
+  </div>
+</div>
+{% endblock content%}

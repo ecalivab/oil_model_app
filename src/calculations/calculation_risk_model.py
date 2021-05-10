@@ -84,20 +84,18 @@ def product(type, weight, geo_risk, sea_risk):
     else:
         return (NaN)
 
-def corridor_failure(conn, java_input_csv, year): 
+def corridor_failure(conn, year): 
     #Calculate risk for crude and for the other commodities
-    corridor = pd.read_csv(java_input_csv)
+    corridors,_ = get_values(conn, 'corridor', 'corridor_id')
     #Getting the Geo_risk by year!!!
     where_clause = "year=%s" % repr(year)
     geo_risk,_ = get_values(conn,'geo_risk',where=where_clause)
-
+   
     corridor_failure = pd.DataFrame(columns=['corridor_id','pipeline_id','corridor_failure_captive','corridor_failure_no_captive', 'year'])
-
-    for _, row in corridor.iterrows():
+    
+    for _, row in corridors.iterrows():
         #WEIGHTS!!!
-        corridor_name = row['RouteName']
-        id = get_values_simple(conn,'corridor',['corridor_id'],'corridor_name=%s' % corridor_name)
-        corridor_id =id['corridor_id'].values[0]
+        corridor_id = row['corridor_id'] 
         #Just Sea without Captive
         sea_branch = get_values_simple(conn, 'corridor_seabranch', where='corridor_id=%s' % corridor_id)
         sea_branch['type'] = 'sea'
@@ -145,12 +143,8 @@ def corridor_failure(conn, java_input_csv, year):
             
             new_row = {'corridor_id': corridor_id, 'pipeline_id':pipeline_id  ,'corridor_failure_captive': result_captive, 'corridor_failure_no_captive': result_no_captive, 'year': year}
             corridor_failure = corridor_failure.append(new_row, ignore_index=True)
-        
-    #print(corridor_failure.head(50))
-        #insert_into(conn, 'corridor_failure', corridor_failure)
 
     return corridor_failure
-
 
 def risk_single_corridor (conn, route_name ,commodity, start_date, end_date=None): #The Pipeline ID should be pass as argument so the user can choose which route wants
     corridor_id = get_values_simple(conn, 'corridor', ['corridor_id'], where="corridor_name=%s" % route_name)
@@ -186,8 +180,6 @@ def risk_single_corridor (conn, route_name ,commodity, start_date, end_date=None
     #corridor_energy = total_intake*pipeline_share*lvh #LVH in MWh
     final_risk = corridor_energy*corridor_failure
 
-    print(final_risk)
-
     return final_risk
 
 def risk_corridor(conn, country ,commodity, start_date, end_date=None):
@@ -208,9 +200,10 @@ if __name__ == '__main__':
     #x = chokepoint_risk(connection, '2019')
     #print(x.head(50))
     #insert_into(connection,'chokepoint_risk',x)
-    cf = corridor_failure(connection,'java_input.csv', '2019')
-    print(cf.head(60))
-    #risk_single_corridor(connection,'Ceyhan-Trieste','Non Heat Crude', '2020-09-15')
+    #cf = corridor_failure(connection, '2019')
+    #print(cf.head(60))
+    x = risk_single_corridor(connection,'Ceyhan-Trieste','Non Heat Crude', '2020-09-15')
+    print(x)
     
     ###### TEST SANITATION STRINGS IN QUERYS########################
     '''

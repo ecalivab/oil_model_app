@@ -12,3 +12,15 @@
         <option value="{{ subcat.id }}">{{ subcat.name}}</option>
     {% endfor %}
 {% endif %}
+
+{% if select == "Load Port" %}
+    {% for subcat in load_port_list %}
+        <option value="{{ subcat.load_port }}">{{ subcat.load_port}}</option>
+    {% endfor %}
+{% endif %}
+
+{% if select == "Discharge Port" %}
+    {% for subcat in discharge_port_list %}
+        <option value="{{ subcat.corridor_id }}">{{ subcat.discharge_port}}</option>
+    {% endfor %}
+{% endif %}

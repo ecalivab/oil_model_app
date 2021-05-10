@@ -4,8 +4,10 @@ from django.http import JsonResponse
 from plotly.offline import plot
 from .forms import ContactForm, SignUpForm, LogInForm
 from .models import Corridor , CorridorIntake, CorridorPipeline, Pipeline, CommodityLvh
+
 from utils.utils_plot import *
 from utils.utils_query import *
+from utils.utils_calculation import *
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -202,7 +204,7 @@ def story_ajax_view (request):
     intake_df =   pd.DataFrame.from_records(
         CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
-    fig = world_choropleth_map(corridor_df, intake_df)
+    fig = world_choropleth_map_intake(corridor_df, intake_df)
     world_plot_div = plot(fig, output_type='div')
 
     total_intake, variation = total_intake_variable(start_date, end_date)
@@ -222,6 +224,64 @@ def story_ajax_view (request):
     }
 
     return render(request, 'stories/crude_ajax.html', context)
+
+def story_oil_view (request):
+    load_port = None
+    discharge_port = None
+    bar_div = None
+    corridor = None
+    current_date = datetime.today()
+    year = current_date.year
+    current_date = current_date.strftime('%d/%m/%Y')
+
+    if request.method == 'POST':
+        id = request.POST.get('discharge_port')
+        year = request.POST.get('year')
+        corridor = Corridor.objects.filter(corridor_id=id).first()
+        pipeline = request.POST.get('pipe_id')
+
+        #BarPlot
+        corridor_intake = pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(corridor=id, date__year = year).values('commodity','intake'))
+        lhv = pd.DataFrame.from_records(
+            CommodityLvh.objects.all().values('commodity_id', 'name'))
+        
+        bar = intake_corridor_barplot(corridor_intake, lhv)
+        bar_div = plot(bar, output_type='div' )
+    
+    risk_dict, total_risk_df = risk_corridor_crude(year) #Corridor failure from 2019 only complete data
+
+    #World Map Color Plot
+    fig = world_choropleth_map_risk(total_risk_df)
+    world_plot_div = plot(fig, output_type='div')
+    intake_bar = horizontal_bar_intake(year)
+    intake_bar_div = plot(intake_bar, output_type='div')
+    piechart = piechart_intake(year)
+    piechart_div = plot(piechart, output_type='div')
+
+    total_intake, variation = total_intake_variation_year(year)
+    top_suppliers, percentages_dict= percentual_variation(year)
+    
+    context = {
+        'corridors' : Corridor.objects.all().distinct('load_country'),
+        'select_corridor': corridor,
+        'select_load_port' : load_port,
+        'select_discharge_port': discharge_port,
+        'years': CorridorIntake.objects.dates('date','year'),
+        'curr_date': current_date,
+        'year': year,
+        'world_plot': world_plot_div, 
+        'bar_div': bar_div,
+        'total_intake': total_intake,
+        'variation': variation,
+        'top_suppliers': top_suppliers,
+        'percetages_dict': percentages_dict,
+        'intake_bar': intake_bar_div,
+        'piechart': piechart_div,
+        'risk_dict': risk_dict,
+    }
+
+    return render(request, 'stories/story_oil.html', context)
 
 
 def load_corridor(request):
@@ -253,5 +313,25 @@ def load_pipe(request):
     context = {
         'pipe_list' : pipelines_names,
         'select'        : "Pipe", 
+    }
+    return render(request, 'stories/ajax_load.html', context)
+
+
+def load_port(request):
+    l_country = request.GET.get('country')
+    SubCategory = Corridor.objects.filter(load_country__startswith=l_country).distinct('load_port')
+    
+    context = {
+        'load_port_list' : SubCategory,
+        'select'        : "Load Port", 
+    }
+    return render(request, 'stories/ajax_load.html', context)
+
+def discharge_port(request):
+    load_port = request.GET.get('load_port')
+    SubCategory = Corridor.objects.filter(load_port=load_port).values('corridor_id', 'discharge_port')
+    context = {
+        'discharge_port_list' : SubCategory,
+        'select'        : "Discharge Port", 
     }
     return render(request, 'stories/ajax_load.html', context)

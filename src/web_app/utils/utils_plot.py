@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
-
+from stories.models import Corridor, CorridorIntake 
+from django.db.models import Q
 #World Thematic Map
 country_code_dict = {
     'Aruba':'ABW',
@@ -255,7 +256,12 @@ country_code_dict = {
     'Zimbabwe':'ZWE',
 }
 
-def world_choropleth_map (df_corridor, df_intake):
+def world_choropleth_map_intake (year):
+    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
+    df_intake =   pd.DataFrame.from_records(
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+
+
     if df_intake.empty:
        fig = go.Figure()
        fig.update_layout(
@@ -363,4 +369,155 @@ def intake_corridor_barplot(intake, lvh):
     return barplot
 
 
+def horizontal_bar_intake(year):
+    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
+    df_intake =   pd.DataFrame.from_records(
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Crude Intake by Country',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['load_country']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+        top_ten = df.nlargest(10,'intake')
+
+        barplot = go.Figure([go.Bar(y=top_ten['load_country'], x=top_ten['intake'],
+                        name='test',
+                        orientation='h',
+                        opacity=0.8, marker_color='blue')])
+
+        barplot.update_layout(
+                        title='Total Intake per Country',
+                        width = 950,
+                        height = 600,
+                        )
+    
+        return barplot
+
+def piechart_intake(year):
+    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','discharge_port'))
+    df_intake =   pd.DataFrame.from_records(
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Intake per Discharge Port',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['discharge_port']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+
+        total_sum = df['intake'].sum()
+        df['percentage'] = df['intake'].apply(lambda x: (x/total_sum).round(4)*100)
+
+        piechart = go.Figure([go.Pie(labels=df['discharge_port'], values=df['percentage'],
+                        name='test',
+                        textinfo='label+percent',
+                        insidetextorientation='radial'
+                       )])
+
+        piechart.update_layout(
+                        title='Total Intake per Discharge Port',
+                        width = 950,
+                        height = 600,
+                        )
+    
+        return piechart
+
+def world_choropleth_map_risk (total_risk_df):
+   
+    if total_risk_df.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Energy Risk',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        total_risk_df['code'] = total_risk_df['country'].map(country_code_dict,'ignore')
+        fig = go.Figure(data=go.Choropleth(
+            locations = total_risk_df['code'],
+            z = total_risk_df['risk'],
+            text = total_risk_df['country'],
+            colorscale = 'Blues',
+            autocolorscale=False,
+            reversescale=True,
+            marker_line_color='darkgray',
+            marker_line_width=0.5,
+            colorbar_tickprefix = '',
+            colorbar_title = 'Energy Risk',
+        ))
+
+        fig.update_layout(
+            title_text='Energy Risk',
+            width=950,
+            height=600,
+            geo=dict(
+                showframe=False,
+                showcoastlines=False,
+                projection_type='equirectangular'
+            ),
+            annotations = [dict(
+                x=0.55,
+                y=0.1,
+                xref='paper',
+                yref='paper',
+                text='',
+                showarrow = False
+            )]
+        )
+
+    return fig
