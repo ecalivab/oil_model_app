@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from stories.models import Corridor, CorridorIntake 
 from django.db.models import Q
+
 #World Thematic Map
 country_code_dict = {
     'Aruba':'ABW',
@@ -259,7 +260,7 @@ country_code_dict = {
 def world_choropleth_map_intake (year):
     df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
     df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
 
     if df_intake.empty:
@@ -307,6 +308,9 @@ def world_choropleth_map_intake (year):
             title_text='Crude Intake by Country',
             width=950,
             height=600,
+            font=dict(
+                size=18,
+                ),
             geo=dict(
                 showframe=False,
                 showcoastlines=False,
@@ -364,7 +368,10 @@ def intake_corridor_barplot(intake, lvh):
                             title='Total Intake per Commodity',
                             width = 500,
                             height = 500,
-                        )
+                            font=dict(
+                                size=18,
+                                ),
+                            )
     
     return barplot
 
@@ -372,7 +379,7 @@ def intake_corridor_barplot(intake, lvh):
 def horizontal_bar_intake(year):
     df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
     df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
     if df_intake.empty:
        fig = go.Figure()
@@ -411,6 +418,9 @@ def horizontal_bar_intake(year):
                         title='Total Intake per Country',
                         width = 950,
                         height = 600,
+                        font=dict(
+                            size=18,
+                            ),
                         )
     
         return barplot
@@ -418,7 +428,7 @@ def horizontal_bar_intake(year):
 def piechart_intake(year):
     df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','discharge_port'))
     df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
 
     if df_intake.empty:
        fig = go.Figure()
@@ -460,6 +470,9 @@ def piechart_intake(year):
                         title='Total Intake per Discharge Port',
                         width = 950,
                         height = 600,
+                        font=dict(
+                            size=18,
+                            ),
                         )
     
         return piechart
@@ -492,19 +505,21 @@ def world_choropleth_map_risk (total_risk_df):
             locations = total_risk_df['code'],
             z = total_risk_df['risk'],
             text = total_risk_df['country'],
-            colorscale = 'Blues',
+            colorscale = 'Reds',
             autocolorscale=False,
-            reversescale=True,
             marker_line_color='darkgray',
             marker_line_width=0.5,
             colorbar_tickprefix = '',
-            colorbar_title = 'Energy Risk',
+            colorbar_title = 'Energy Risk [Mtoe]',
         ))
 
         fig.update_layout(
             title_text='Energy Risk',
             width=950,
             height=600,
+            font=dict(
+                 size=18,
+                ),
             geo=dict(
                 showframe=False,
                 showcoastlines=False,

@@ -1,11 +1,11 @@
 import pandas as pd
 from stories.models import CorridorIntake, Corridor, CommodityLvh ,Pipeline, CorridorFailure, CorridorPipeline
-from django.db.models import Q , Sum, OuterRef, Subquery
+from django.db.models import Q, Subquery
 
 def risk_single_corridor_crude (corridor_id, country, year): #The Pipeline ID should be pass as argument so the user can choose which route wants
     single_risk_df = pd.DataFrame(columns=['corridor_id','country','pipeline_id','risk'])
 
-    intake_df = pd.DataFrame.from_records(CorridorIntake.objects.filter(Q(date__year=year), Q(corridor = corridor_id), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','commodity','intake'))
+    intake_df = pd.DataFrame.from_records(CorridorIntake.objects.filter(Q(date__year=year), Q(corridor = corridor_id), Q(commodity=66)|Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','commodity','intake'))
     failure = pd.DataFrame.from_records(CorridorFailure.objects.filter(corridor = corridor_id, year=2019).values('pipeline','corridor_failure_captive'))
     
     if failure.empty == False:
@@ -38,6 +38,6 @@ def risk_corridor_crude(year):
     
     max = total_risk_df[total_risk_df['risk']==total_risk_df['risk'].max()]
     min = total_risk_df[total_risk_df['risk']==total_risk_df['risk'].min()]
-    risk_dict = {'max_c': max['country'].values[0], 'max_r': max['risk'].values[0].round(3), 'min_c':min['country'].values[0], 'min_r': min['risk'].values[0].round(3)}
+    risk_dict = {'max_c': max['country'].values[0], 'max_r': round(max['risk'].values[0]/1000000,4), 'min_c':min['country'].values[0], 'min_r': round(min['risk'].values[0]/1000000,4)}
 
     return risk_dict, total_risk_df

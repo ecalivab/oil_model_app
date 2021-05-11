@@ -1,6 +1,6 @@
 {% extends "stories/base.html"%}
 {% load custom_template_tags %}
-
+{% load static %}
 
 {% block header %}
     <div class="container-fluid bg-light">
@@ -98,12 +98,8 @@
         <div class="col-md-8">
           <p class="py-3 px-3" style="font-size: 18px;">In the year <b>{{year}}</b>, <b>{{total_intake}}</b> Mton of crude were discarged in italian ports <b>{{variation}}</b>% with respect to the previous year. 
           <br>The main crude suppliers were:</p>
-          <div class="container" style="width:400px; height:200px; position:relative; right:305px; bottom: 15px;">
-            <ol class="list-group list-group-numbered ms-left">
-                {%for supplier in top_suppliers%}
-                    <li class="list-group-item list-group-item-primary"><b>{{supplier}}</b></li>
-                {%endfor%}.
-            </ol>
+          <div class="container" style="width:600px; height:290px; position: relative; margin-left:200px;">
+            {% autoescape off %}{{top_five}}{% endautoescape %}
            </div>
            <p class="py-2 px-3" style="font-size: 18px;">
             {% for key, value in percetages_dict.items %}
@@ -149,16 +145,27 @@
         </div>
         <div class="col-md-4 bg-side">
             {% if select_corridor %}
-              <h3>{{select_corridor.corridor_name}}</h3>
-              <div class="container">
-                {% autoescape off %}
-                  {{ bar_div }}
-                {% endautoescape %}
-              </div>
+              <h2 class="py-2">Corridor: <b>{{select_corridor.corridor_name}}</b></h2>
+              <p class="py-2" style="font-size: 18px;"> In <b>{{year}}</b> the corridor present a energy risk <b>{{corridor_dict.risk}}</b> of toe by transporting <b>{{corridor_dict.corridor_intake}}</b> tons of crude
+              passing through <b>{{corridor_dict.pipeline_name}}</b> of length <b>{{corridor_dict.length}}</b> km.</p>
+              <h3 class="py-2">Load Country: <b>{{select_corridor.load_country}}</b></h3>
+              <p class="py-2" style="font-size: 18px;"> In <b>{{year}}</b>, <b>{{select_corridor.load_country}}</b> accounted for <b>{{country_dict.percentage}}</b>% of total crude coming in Italy by sea with an amout of <b>{{country_dict.intake}}</b> Mtoe of crude
+                (<b>{{country_dict.variation}}</b>% with respect to the previous year). The ports belonging to <b>{{select_corridor.load_country}}</b> that exported the major amount of crude to 
+                Italy were {% for port, value in country_dict.top_three.items%} <b>{{port}}</b> (<b>{{value}}</b> toe) {%endfor%}. </p>
+              <h3 class="py-2">Load Port: <b>{{select_corridor.load_port}}</b></h3>
+              <p class="py-2" style="font-size: 18px;"> {{select_corridor.load_port}} exported to Italy <b>{{load_dict.intake}}</b> toe of crude (<b>{{load_dict.variation}}</b>% with respect to the previous year), 
+                accounting for <b>{{load_dict.percentage}}</b>% of total crude coming from <b>{{select_corridor.load_country}}</b> in <b>{{year}}</b>.</p>
+              <h3 class="py-2">Discharge Port: <b>{{select_corridor.discharge_port}}</b></h3>
+              <p class="py-2" style="font-size: 18px;"> A total amount of <b>{{discharge_dict.total_intake}}</b> toe of crude were discharged in Trieste port in <b>{{year}}.</b> 
+                The overall quantity of crude coming from <b>{{select_corridor.load_country}}</b> ports to {{select_corridor.discharge_port}} were <b>{{discharge_dict.intake}}</b> toe (<b>{{discharge_dict.variation}}%</b> with respect to the previous year).</p>
             {%else%}
-              <h3>Please Select a Corridor </h3>
+              <h2 class="py-2">Please Select a Corridor </h2>
+              <p class="py-2" style="font-size: 18px;">Use the filter in the bar above to select the desire configuration.
+              <br>If you are only interested in change the year of the default story it is possible but anything will be updated on this side.</p>
+              <div class="container py-5" style="height: 500px; width: 400px;">
+                <img src= "{% static '/stories/images/cog.svg'%}" class="img-fluid" alt="">
+              </div>
             {%endif%}
-            <p>Poner aqui cosas interactivas</p>
         </div>
       </div>
   </div>

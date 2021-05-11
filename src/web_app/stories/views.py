@@ -228,28 +228,30 @@ def story_ajax_view (request):
 def story_oil_view (request):
     load_port = None
     discharge_port = None
-    bar_div = None
     corridor = None
+    pipeline = None
     current_date = datetime.today()
     year = current_date.year
     current_date = current_date.strftime('%d/%m/%Y')
-
+    country_dict = None
+    load_dict = None
+    discharge_dict = None
+    corridor_dict = None
+  
     if request.method == 'POST':
         id = request.POST.get('discharge_port')
         year = request.POST.get('year')
         corridor = Corridor.objects.filter(corridor_id=id).first()
         pipeline = request.POST.get('pipe_id')
+        if (id is not None):
+            percentages_dict, percentage_df, top_five = percentual_variation(year)
+            country_dict, load_dict, discharge_dict = side_bar_data_crude(id, year, percentage_df)
+            corridor_dict = risk_side_bar_crude(pipeline, id, year)
 
-        #BarPlot
-        corridor_intake = pd.DataFrame.from_records(
-            CorridorIntake.objects.filter(corridor=id, date__year = year).values('commodity','intake'))
-        lhv = pd.DataFrame.from_records(
-            CommodityLvh.objects.all().values('commodity_id', 'name'))
-        
-        bar = intake_corridor_barplot(corridor_intake, lhv)
-        bar_div = plot(bar, output_type='div' )
-    
+    percentages_dict, percentage_df, top_five = percentual_variation(year)
+    total_intake, variation = total_intake_variation_year(year)
     risk_dict, total_risk_df = risk_corridor_crude(year) #Corridor failure from 2019 only complete data
+    top_five = top_five.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
 
     #World Map Color Plot
     fig = world_choropleth_map_risk(total_risk_df)
@@ -258,10 +260,7 @@ def story_oil_view (request):
     intake_bar_div = plot(intake_bar, output_type='div')
     piechart = piechart_intake(year)
     piechart_div = plot(piechart, output_type='div')
-
-    total_intake, variation = total_intake_variation_year(year)
-    top_suppliers, percentages_dict= percentual_variation(year)
-    
+ 
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
         'select_corridor': corridor,
@@ -271,14 +270,18 @@ def story_oil_view (request):
         'curr_date': current_date,
         'year': year,
         'world_plot': world_plot_div, 
-        'bar_div': bar_div,
         'total_intake': total_intake,
         'variation': variation,
-        'top_suppliers': top_suppliers,
         'percetages_dict': percentages_dict,
         'intake_bar': intake_bar_div,
         'piechart': piechart_div,
         'risk_dict': risk_dict,
+        'pipeline' : pipeline,
+        'country_dict': country_dict,
+        'load_dict': load_dict,
+        'discharge_dict': discharge_dict,
+        'corridor_dict': corridor_dict,
+        'top_five': top_five,
     }
 
     return render(request, 'stories/story_oil.html', context)
