@@ -8,25 +8,47 @@
         <div class="btn-group btn-block">
           <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
               <select class="text-center" id="sel_country" name="load_country">
+                {% if select_corridor.load_country %}
+                  <option value="second" selected >{{select_corridor.load_country}}</option>
+                {% else %}
                   <option value="" selected disabled hidden>--Select Load Country--</option>
-                  {% for name in corridors%}
-                      <option class="dropdown-item" value={{name.load_country}}>{{name.load_country}}</option>  
-                  {%endfor%}                 
+                {%endif%} 
+                {% for name in corridors%}
+                    <option class="dropdown-item" value="{{name.load_country}}">{{name.load_country}}</option>  
+                {%endfor%}                               
               </select> 
               <select class="text-center" id="sel_load_port" name="load_port">
-                <option value="" selected disabled hidden>--Select Load Port--</option>
+                {%if select_corridor.load_port %}
+                  <option value="second" selected >{{select_corridor.load_port}}</option>
+                {%else%}
+                  <option value="" selected disabled hidden>--Select Load Port--</option>
+                {%endif%}
               </select>
               <select class="text-center" id="sel_discharge_port" name="discharge_port">
-                <option value="" selected disabled hidden>--Select Discharge Port--</option>
+                {%if select_corridor.discharge_port %}
+                  <option value="second" selected >{{select_corridor.discharge_port}}</option>
+                {%else%}
+                  <option value="" selected disabled hidden>--Select Discharge Port--</option>
+                {%endif%}
               </select>
               <select class="text-center" id="sel_pipe" name="pipe_id">
-                <option value="" selected disabled hidden>--Select Pipeline--</option>
+                {%if corridor_dict.pipeline_name %}
+                <option value="second" selected >{{corridor_dict.pipeline_name}}</option>
+                {%else%}
+                  <option value="" selected disabled hidden>--Select Pipeline--</option>
+                {%endif%}
               </select>
               <select class="text-center" id="sel_year" name="year">
-                <option value="" selected disabled hidden>--Select Year--</option>
-                    {% for year in years%}
+                {%if year %}
+                  <option value="{{year}}" selected>{{year}}</option>
+                {%else%}
+                  <option value="" selected disabled hidden>--Select Year--</option>
+                {%endif%}
+                {% for year in years%}
+                    <option class="dropdown-item" value={{year.year}}>{{year.year}}</option>  
                         <option class="dropdown-item" value={{year.year}}>{{year.year}}</option>  
-                    {%endfor%}                    
+                    <option class="dropdown-item" value={{year.year}}>{{year.year}}</option>  
+                {%endfor%}                                  
               </select>
               <button id='filter' type="submit" class="btn btn-primary">Filter</button>      
           </form>
@@ -74,16 +96,22 @@
         });
       });
 
-      $(document).ready(function () {
-         $('#filter').prop('disabled', true);   // SET THE PROPERTY AFTER THE PAGE HAS LOADED.
-         $('#sel_pipe').change(function(){
+      $(document).ready(function () {   
+        $('#filter').prop('disabled', true);   // SET THE PROPERTY AFTER THE PAGE HAS LOADED.
+        $('#sel_pipe').change(function(){
+          $('#filter').prop('disabled', false);  
            $('#filter').prop('disabled', false);  
-         });
-         $('#sel_year').change(function(){
+          $('#filter').prop('disabled', false);  
+        });
+        $('#sel_year').change(function(){
+          $('#filter').prop('disabled', false);  
            $('#filter').prop('disabled', false);  
-         });
+          $('#filter').prop('disabled', false);  
+        });
       });
-
+    
+     
+      //$('body').html($('body').html().replace(/Egypt, Arab Rep./g, 'Egypt')) 
     </script>
 
 {% endblock header %}
@@ -100,8 +128,8 @@
           <br>The main crude suppliers were:</p>
           <div class="container" style="width:600px; height:290px; position: relative; margin-left:200px;">
             {% autoescape off %}{{top_five}}{% endautoescape %}
-           </div>
-           <p class="py-2 px-3" style="font-size: 18px;">
+          </div>
+          <p class="py-2 px-3" style="font-size: 18px;">
             {% for key, value in percetages_dict.items %}
                 {% if forloop.first %}  
                     <b>{{key}}</b> accounted for <b>{{value}}%</b> of total crude delivered in Italy in year {{year}},
@@ -149,15 +177,15 @@
               <p class="py-2" style="font-size: 18px;"> In <b>{{year}}</b> the corridor present a energy risk <b>{{corridor_dict.risk}}</b> of toe by transporting <b>{{corridor_dict.corridor_intake}}</b> tons of crude
               passing through <b>{{corridor_dict.pipeline_name}}</b> of length <b>{{corridor_dict.length}}</b> km.</p>
               <h3 class="py-2">Load Country: <b>{{select_corridor.load_country}}</b></h3>
-              <p class="py-2" style="font-size: 18px;"> In <b>{{year}}</b>, <b>{{select_corridor.load_country}}</b> accounted for <b>{{country_dict.percentage}}</b>% of total crude coming in Italy by sea with an amout of <b>{{country_dict.intake}}</b> Mtoe of crude
+              <p class="py-2" style="font-size: 18px;"> In <b>{{year}}</b>, <b>{{select_corridor.load_country}}</b> accounted for <b>{{country_dict.percentage}}</b>% of total crude coming in Italy by sea with an amout of <b>{{country_dict.intake}}</b> tons of crude
                 (<b>{{country_dict.variation}}</b>% with respect to the previous year). The ports belonging to <b>{{select_corridor.load_country}}</b> that exported the major amount of crude to 
-                Italy were {% for port, value in country_dict.top_three.items%} <b>{{port}}</b> (<b>{{value}}</b> toe) {%endfor%}. </p>
+                Italy were {% for port, value in country_dict.top_three.items%} <b>{{port}}</b> (<b>{{value}}</b> tons) {%endfor%}. </p>
               <h3 class="py-2">Load Port: <b>{{select_corridor.load_port}}</b></h3>
               <p class="py-2" style="font-size: 18px;"> {{select_corridor.load_port}} exported to Italy <b>{{load_dict.intake}}</b> toe of crude (<b>{{load_dict.variation}}</b>% with respect to the previous year), 
                 accounting for <b>{{load_dict.percentage}}</b>% of total crude coming from <b>{{select_corridor.load_country}}</b> in <b>{{year}}</b>.</p>
               <h3 class="py-2">Discharge Port: <b>{{select_corridor.discharge_port}}</b></h3>
               <p class="py-2" style="font-size: 18px;"> A total amount of <b>{{discharge_dict.total_intake}}</b> toe of crude were discharged in Trieste port in <b>{{year}}.</b> 
-                The overall quantity of crude coming from <b>{{select_corridor.load_country}}</b> ports to {{select_corridor.discharge_port}} were <b>{{discharge_dict.intake}}</b> toe (<b>{{discharge_dict.variation}}%</b> with respect to the previous year).</p>
+                The overall quantity of crude coming from <b>{{select_corridor.load_country}}</b> ports to {{select_corridor.discharge_port}} were <b>{{discharge_dict.intake}}</b> tons (<b>{{discharge_dict.variation}}%</b> with respect to the previous year).</p>
             {%else%}
               <h2 class="py-2">Please Select a Corridor </h2>
               <p class="py-2" style="font-size: 18px;">Use the filter in the bar above to select the desire configuration.

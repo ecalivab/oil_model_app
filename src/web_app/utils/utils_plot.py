@@ -12,7 +12,7 @@ country_code_dict = {
     'Åland Islands':'ALA',
     'Albania':'ALB',
     'Andorra':'AND  ',
-    'United Arab Emirates':'ARE',
+    'United Arab Emirates':'ARE',
     'Argentina':'ARG ',
     'Armenia':'ARM ',
     'American Samoa':'ASM',
@@ -84,7 +84,6 @@ country_code_dict = {
     'Faroe Islands':'FRO',
     'Micronesia (Federated States of)':'FSM',
     'Gabon':'GAB',
-    'United Kingdom':'GBR',
     'Georgia':'GEO',
     'Guernsey':'GGY',
     'Ghana':'GHA',
@@ -239,8 +238,8 @@ country_code_dict = {
     'Ukraine':'UKR',
     'United States Minor Outlying Islands':'UMI',
     'Uruguay':'URY',
-    'United States of America':'USA',
-    'USA':'USA',
+    'United States':'USA',
+    'United Kingdom':'GBR',
     'Uzbekistan':'UZB',
     'Holy See':'VAT',
     'Saint Vincent and the Grenadines':'VCT',
@@ -257,12 +256,7 @@ country_code_dict = {
     'Zimbabwe':'ZWE',
 }
 
-def world_choropleth_map_intake (year):
-    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
-    df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
-
-
+def world_choropleth_map_intake (df_corridor, df_intake):
     if df_intake.empty:
        fig = go.Figure()
        fig.update_layout(
@@ -284,7 +278,7 @@ def world_choropleth_map_intake (year):
             ]
         )
     else:
-        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df_intake.columns = ['corridor_id', 'intake','commodity','date']
         df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
         df =df.drop(['corridor_id'], axis = 1)
         df = df.groupby(['load_country']).sum().reset_index()
@@ -295,19 +289,19 @@ def world_choropleth_map_intake (year):
             locations = df['code'],
             z = df['intake'],
             text = df['load_country'],
-            colorscale = 'Blues',
+            colorscale = 'Oranges',
             autocolorscale=False,
-            reversescale=True,
-            marker_line_color='darkgray',
-            marker_line_width=0.5,
+            reversescale=False,
+            marker_line_color='white',
+            marker_line_width=0.8,
             colorbar_tickprefix = '',
             colorbar_title = 'Crude Intake (Tons)',
         ))
 
         fig.update_layout(
-            title_text='Crude Intake by Country',
+            title_text='Color Map of Crude Intake by Country',
             width=950,
-            height=600,
+            height=530,
             font=dict(
                 size=18,
                 ),
@@ -348,11 +342,8 @@ def intake_corridor_barplot(intake, lvh):
                         )
     else:
         intake.columns = ['commodity_id', 'intake']
-        print(intake.head(50))
         df =  pd.merge(intake,lvh,on=['commodity_id'],how="inner",indicator=True)
-        print(df.head(50))
         df = df.groupby(['name']).sum().reset_index()
-        print(df.head(10))
         '''
         data = list(CorridorIntake.objects.values_list('commodity').annotate(Sum('intake'))) #Return a tumple of (commodity, sum)
         x_data, y_data = [list(c) for c in zip(*data)] #Separete x and y data by commodity and sum(intake)
@@ -376,10 +367,7 @@ def intake_corridor_barplot(intake, lvh):
     return barplot
 
 
-def horizontal_bar_intake(year):
-    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
-    df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+def horizontal_bar_intake(df_corridor, df_intake):
 
     if df_intake.empty:
        fig = go.Figure()
@@ -402,6 +390,7 @@ def horizontal_bar_intake(year):
             ]
         )
     else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
         df_intake.columns = ['corridor_id', 'intake', 'date']
         df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
         df =df.drop(['corridor_id'], axis = 1)
@@ -423,12 +412,58 @@ def horizontal_bar_intake(year):
                             ),
                         )
     
+    return barplot
+
+def horizontal_bar_intake_load_port(df_corridor, df_intake):
+
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Intake by Load Port [Mtons]',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df['location'] =  df['load_port'] +' (' +df['load_country'] + ')'
+        df = df.groupby(['location']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+       
+        top_ten = df.nlargest(10,'intake')
+
+        barplot = go.Figure([go.Bar(y=top_ten['location'], x=top_ten['intake'],
+                        name='test',
+                        orientation='h',
+                        opacity=0.8, marker_color='blue')])
+
+        barplot.update_layout(
+                        title='Total Intake by Load Port [Mtons]',
+                        width = 1050,
+                        height = 600,
+                        font=dict(
+                            size=18,
+                            ),
+                        )
+    
         return barplot
 
-def piechart_intake(year):
-    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','discharge_port'))
-    df_intake =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+def piechart_intake(df_corridor, df_intake):
 
     if df_intake.empty:
        fig = go.Figure()
@@ -451,6 +486,7 @@ def piechart_intake(year):
             ]
         )
     else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
         df_intake.columns = ['corridor_id', 'intake', 'date']
         df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
         df =df.drop(['corridor_id'], axis = 1)
@@ -475,7 +511,7 @@ def piechart_intake(year):
                             ),
                         )
     
-        return piechart
+    return piechart
 
 def world_choropleth_map_risk (total_risk_df):
    
@@ -536,3 +572,236 @@ def world_choropleth_map_risk (total_risk_df):
         )
 
     return fig
+
+def group_bar_intake_country(corridor_df, intake_df, intake_previous_df, year):
+    if intake_df.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Intake by Load Country [Mtons]',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+
+    elif intake_previous_df.empty:
+        intake_df = intake_df.drop(['commodity'], axis= 1)
+        intake_df.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(corridor_df,intake_df,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['load_country']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+        top_ten = df.nlargest(10,'intake')
+
+        fig = go.Figure(data=[
+        go.Bar(name=year, x=df['load_country'], y=df['intake']),
+        ])
+
+        fig.update_layout(
+        barmode='group',
+        title='Total Intake by Load Country [Mtons]',
+        width = 1100,
+        height = 600,
+        font=dict(
+            size=18,
+            ),
+        )
+
+    else:
+        intake_df = intake_df.drop(['commodity'], axis= 1)
+        intake_df.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(corridor_df,intake_df,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['load_country']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+        top_ten = df.nlargest(10,'intake')
+
+        intake_previous_df = intake_previous_df.drop(['commodity'], axis= 1)
+        intake_previous_df.columns = ['corridor_id', 'intake', 'date']
+        df_last = pd.merge(corridor_df,intake_previous_df,on=['corridor_id'],how="outer",indicator=True)
+        df_last =df_last.drop(['corridor_id'], axis = 1)
+        df_last = df_last.groupby(['load_country']).sum().reset_index()
+
+        new_df = pd.merge(top_ten,df_last,on=['load_country'],how="left",indicator=True)
+        fig = go.Figure(data=[
+        go.Bar(name=year, x=new_df['load_country'], y=new_df['intake_x']),
+        go.Bar(name=year-1, x=new_df['load_country'], y=new_df['intake_y'])
+        ])
+        # Change the bar mode
+        fig.update_layout(
+            barmode='group',
+            title='Total Intake by Load Country [Mtons]',
+            width = 1100,
+            height = 600,
+            font=dict(
+                size=18,
+                ),
+            )
+            
+
+    return fig
+
+def piechart_intake_load_country(df_corridor, df_intake):
+
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Shares of Crude Intake by Load Port',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['load_port']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+
+        total_sum = df['intake'].sum()
+        df['percentage'] = df['intake'].apply(lambda x: (x/total_sum).round(4)*100)
+        df = df.sort_values(by=['intake'],ascending=False)
+        top_ten = df.nlargest(7,'intake')
+        rest_intake = df.iloc[7:].sum()
+        top_ten = top_ten.append({'load_port': 'Others', 'intake': rest_intake['intake'], 'percentage': rest_intake['percentage']}, ignore_index=True)
+        
+        piechart = go.Figure([go.Pie(labels=top_ten['load_port'], values=top_ten['percentage'],
+                        name='test',
+                        textinfo='label+percent',
+                        insidetextorientation='radial'
+                       )])
+
+        piechart.update_layout(
+                        title='Shares of Crude Intake by Load Port',
+                        width = 950,
+                        height = 600,
+                        font=dict(
+                            size=18,
+                            ),
+                        )
+    
+    return piechart
+
+    
+def bar_plot_oil_dicharge_port (df_corridor, df_intake):
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Intake by Discharge Port [Mtons]',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['discharge_port']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+       
+        top_ten = df.nlargest(10,'intake')
+
+        barplot = go.Figure([go.Bar(x=top_ten['discharge_port'], y=top_ten['intake'],
+                        name='test',
+                        opacity=0.8, marker_color='blue')])
+
+        barplot.update_layout(
+                        title='Total Intake by Discharge Port [Mtons]',
+                        width = 1050,
+                        height = 600,
+                        font=dict(
+                            size=18,
+                            ),
+                        )
+    
+        return barplot
+
+def piechart_discharge_port_oil(df_corridor, df_intake):
+    if df_intake.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Shares of Crude Intake by Discharge Port',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake = df_intake.drop(['commodity'], axis= 1)
+        df_intake.columns = ['corridor_id', 'intake', 'date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="outer",indicator=True)
+        df =df.drop(['corridor_id'], axis = 1)
+        df = df.groupby(['discharge_port']).sum().reset_index()
+        df = df[df['intake']> 0] # filter values that are more than zero
+
+        total_sum = df['intake'].sum()
+        df['percentage'] = df['intake'].apply(lambda x: (x/total_sum).round(4)*100)
+        df = df.sort_values(by=['intake'],ascending=False)
+        top_ten = df.nlargest(7,'intake')
+        rest_intake = df.iloc[7:].sum()
+        top_ten = top_ten.append({'discharge_port': 'Others', 'intake': rest_intake['intake'], 'percentage': rest_intake['percentage']}, ignore_index=True)
+        
+        piechart = go.Figure([go.Pie(labels=top_ten['discharge_port'], values=top_ten['percentage'],
+                        name='test',
+                        textinfo='label+percent',
+                        insidetextorientation='radial'
+                       )])
+
+        piechart.update_layout(
+                        title='Shares of Crude Intake by Discharge Port',
+                        width = 950,
+                        height = 600,
+                        font=dict(
+                            size=18,
+                            ),
+                        )
+    
+    return piechart

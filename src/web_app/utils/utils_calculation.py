@@ -11,9 +11,9 @@ def risk_single_corridor_crude (corridor_id, country, year): #The Pipeline ID sh
     if failure.empty == False:
         failure.columns = ['pipeline_id', 'corridor_failure_captive']
    
-    if intake_df.empty == False:
-        intake_df = intake_df.groupby(['corridor','commodity']).agg({'intake': 'sum',}).reset_index()
-       
+        if intake_df.empty == False:
+            intake_df = intake_df.groupby(['corridor','commodity']).agg({'intake': 'sum',}).reset_index()
+        
         corridor_pipeline = CorridorPipeline.objects.filter(corridor= corridor_id)
         pipeline_df = pd.DataFrame.from_records(Pipeline.objects.filter(pipeline_id__in = Subquery(corridor_pipeline.values('pipeline'))).values('pipeline_id','share_val'))    
         if pipeline_df.empty == False:

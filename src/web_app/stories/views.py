@@ -202,7 +202,7 @@ def story_ajax_view (request):
     #World Map Color Plot
     corridor_df = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country'))
     intake_df =   pd.DataFrame.from_records(
-        CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','date'))
+        CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','commodity','date'))
 
     fig = world_choropleth_map_intake(corridor_df, intake_df)
     world_plot_div = plot(fig, output_type='div')
@@ -226,8 +226,6 @@ def story_ajax_view (request):
     return render(request, 'stories/crude_ajax.html', context)
 
 def story_oil_view (request):
-    load_port = None
-    discharge_port = None
     corridor = None
     pipeline = None
     current_date = datetime.today()
@@ -241,31 +239,41 @@ def story_oil_view (request):
     if request.method == 'POST':
         id = request.POST.get('discharge_port')
         year = request.POST.get('year')
-        corridor = Corridor.objects.filter(corridor_id=id).first()
         pipeline = request.POST.get('pipe_id')
-        if (id is not None):
-            percentages_dict, percentage_df, top_five = percentual_variation(year)
-            country_dict, load_dict, discharge_dict = side_bar_data_crude(id, year, percentage_df)
-            corridor_dict = risk_side_bar_crude(pipeline, id, year)
+        corridor_df, intake_df, intake_last_df = common_querys(year, crude_flag = 1) 
+        intake_stats_df = load_country_intake_stats(corridor_df, intake_df)
+        
+        if (pipeline == 'second'): #Added for second year search
+            corridor = None
+        else:
+            corridor = Corridor.objects.filter(corridor_id=id).first()
+            if (id is not None):
+                country_dict, load_dict, discharge_dict = side_bar_data_crude(id, year, intake_stats_df)
+                corridor_dict = risk_side_bar_crude(pipeline, id, year)
 
-    percentages_dict, percentage_df, top_five = percentual_variation(year)
-    total_intake, variation = total_intake_variation_year(year)
+    else: #With this else the common query will not be repetead twice
+        corridor_df, intake_df, intake_last_df = common_querys(year, crude_flag = 1)
+        intake_stats_df = load_country_intake_stats(corridor_df, intake_df)
+
+    total_intake, variation = intake_variation_year(intake_df, intake_last_df)
+    percentages_dict, top_five = top_five_load_countries(intake_stats_df)
+
     risk_dict, total_risk_df = risk_corridor_crude(year) #Corridor failure from 2019 only complete data
+    
+    #Table of Top5 countries with Intake
     top_five = top_five.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
 
     #World Map Color Plot
     fig = world_choropleth_map_risk(total_risk_df)
     world_plot_div = plot(fig, output_type='div')
-    intake_bar = horizontal_bar_intake(year)
+    intake_bar = horizontal_bar_intake(corridor_df, intake_df)
     intake_bar_div = plot(intake_bar, output_type='div')
-    piechart = piechart_intake(year)
+    piechart = piechart_intake(corridor_df, intake_df)
     piechart_div = plot(piechart, output_type='div')
  
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
         'select_corridor': corridor,
-        'select_load_port' : load_port,
-        'select_discharge_port': discharge_port,
         'years': CorridorIntake.objects.dates('date','year'),
         'curr_date': current_date,
         'year': year,
@@ -286,7 +294,81 @@ def story_oil_view (request):
 
     return render(request, 'stories/story_oil.html', context)
 
+def oil_intake_story_view (request):
+    current_date = datetime.today()
+    year = current_date.year
+    current_date = current_date.strftime('%d/%m/%Y')
 
+    if request.method == 'POST':
+        year = int(request.POST.get('year'))
+        
+    #Functions
+    corridor_df, intake_df, intake_previous_df = common_querys(year, crude_flag = 1)
+    total_intake, variation = intake_variation_year(intake_df, intake_previous_df)
+    intake_stats_df = load_country_intake_stats(corridor_df, intake_df)
+    percentages_dict, top_five = top_five_load_countries(intake_stats_df)
+
+    #Table
+    table_dataframe = table_with_variations(corridor_df, intake_df, intake_previous_df, year)
+    table_df = table_dataframe.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
+
+    #Plots
+    fig = world_choropleth_map_intake(corridor_df, intake_df)
+    world_plot_div = plot(fig, output_type='div')
+    intake_bar = horizontal_bar_intake_load_port(corridor_df, intake_df)
+    intake_bar_div = plot(intake_bar, output_type='div')
+    group_bar = group_bar_intake_country(corridor_df, intake_df, intake_previous_df, year)
+    group_bar_div = plot(group_bar, output_type='div')
+    piechart = piechart_intake_load_country(corridor_df, intake_df)
+    piechart_div = plot(piechart, output_type='div')
+
+    context = {
+        'corridors': Corridor.objects.all().distinct('load_country'),
+        'years': CorridorIntake.objects.dates('date','year'),
+        'curr_date': current_date,
+        'year': year,
+        'total_intake': total_intake,
+        'variation': variation,
+        'world_plot': world_plot_div, 
+        'intake_bar': intake_bar_div,
+        'group_bar': group_bar_div,
+        'piechart': piechart_div,
+        'percetages_dict': percentages_dict,
+        'table': table_df,
+        'table_df': table_dataframe, #passed directly to Sidebar
+    }
+
+    return render(request, 'stories/oil_intake_story.html', context)
+
+def discharge_port_oil_story_view(request):
+    current_date = datetime.today()
+    year = current_date.year
+    current_date = current_date.strftime('%d/%m/%Y')
+
+    if request.method == 'POST':
+        year = int(request.POST.get('year'))
+
+    corridor_df, intake_df, intake_previous_df = common_querys(year, crude_flag = 1)
+    total_intake, variation = intake_variation_year(intake_df, intake_previous_df)
+
+    barfig = bar_plot_oil_dicharge_port(corridor_df, intake_df)
+    barplot_div = plot(barfig, output_type='div')
+    piefig = piechart_discharge_port_oil(corridor_df, intake_df)
+    piechart_div = plot(piefig, output_type='div')
+
+    context = {
+        'corridors': Corridor.objects.all().distinct('discharge_port'),
+        'years': CorridorIntake.objects.dates('date','year'),
+        'curr_date': current_date,
+        'year': year,
+        'total_intake': total_intake,
+        'variation': variation,
+        'barplot': barplot_div,
+        'piechart': piechart_div,
+    }
+
+    return render(request, 'stories/oil_discharge_port_story.html', context)
+    
 def load_corridor(request):
     print(request.GET)
     l_country = request.GET.get('country')
@@ -296,7 +378,7 @@ def load_corridor(request):
         'select'        : "Corridor", 
     }
     return render(request, 'stories/ajax_load.html', context)
-
+    
 
 def load_pipe(request):
     pipelines_names = [] 
@@ -336,5 +418,30 @@ def discharge_port(request):
     context = {
         'discharge_port_list' : SubCategory,
         'select'        : "Discharge Port", 
+    }
+    return render(request, 'stories/ajax_load.html', context)
+
+def sidebar_oil_intake (request):
+    l_country = request.GET.get('country')
+    year = request.GET.get('year')
+    year_intake = float(request.GET.get('year_intake'))
+    
+    corridor_dict, intake = sidebar_oil_intake_content(l_country,year,year_intake)
+    context = {
+        'country': l_country,
+        'year': year,
+        'corr_dict': corridor_dict,
+        'intake': int(intake),
+        'select': "Sidebar",
+    }
+    return render(request, 'stories/ajax_load.html', context)
+
+def sidebar_oil_discharge_intake (request):
+    discharge_port = request.GET.get('discharge_port')
+    year = request.GET.get('year')
+    sidebar_discharge_port_oil(discharge_port, year)
+    context = {
+        'discharge_port': discharge_port,
+        'select': "Sidebar_DP",
     }
     return render(request, 'stories/ajax_load.html', context)

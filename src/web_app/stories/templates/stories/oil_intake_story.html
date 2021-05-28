@@ -1,0 +1,169 @@
+{% extends "stories/base.html"%}
+{% load custom_template_tags %}
+{% load static %}
+
+{% block header %}
+    <div class="container-fluid bg-light">
+        <h1 class="h1-left">Main Crude Oil Suppliers for Italy</h1>
+        <div class="btn-group btn-block">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
+            <select class="text-center" id="sel_year" name="year">
+              {%if year %}
+                <option value="{{year}}" selected>{{year}}</option>
+              {%else%}
+                <option value="" selected disabled hidden>--Select Year--</option>
+              {%endif%}
+              {% for year in years%}
+                  <option class="dropdown-item" value={{year.year}}>{{year.year}}</option>  
+              {%endfor%}                    
+            </select>
+
+            <select class="text-center" id="sel_country" name="load_country">
+              {% if country %}
+                <option value="second" selected >{{country}}</option>
+              {% else %}
+                <option value="" selected disabled hidden>--Select Load Country--</option>
+              {%endif%} 
+              {% for name in corridors%}
+                  <option class="dropdown-item" value="{{name.load_country}}">{{name.load_country}}</option>  
+              {%endfor%}                
+            </select> 
+            <button id='filter' type="submit" class="btn btn-primary">Filter</button>      
+          </form>
+      </div>
+      
+    </div>
+    
+    <script>
+      $("#sel_country").change(function () {
+              var country_sel = $(this).val();  // get the selected country ID from the HTML input
+              $.ajax({                       // initialize an AJAX request
+                url: "{% url 'ajax_sidebar_oil_intake' %}", // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                data: {
+                  'country': country_sel, // add the country id to the GET parameters
+                  'year': "{{year | safe}}", 
+                  'year_intake' : "{{total_intake | safe}}",
+                },
+                success: function (data) {   // `data` is the return of the `load_cities` view function
+                  $("#sidebar").html(data);  // replace the contents of the city input with the data that came from the server
+                }
+              });  
+            });
+    
+      $(document).ready(function () {   
+        $('#filter').prop('disabled', true);   // SET THE PROPERTY AFTER THE PAGE HAS LOADED.
+        $('#sel_year').change(function(){
+          $('#filter').prop('disabled', false);  
+        });
+      });
+      
+      //$('body').html($('body').html().replace(/Egypt, Arab Rep./g, 'Egypt')) 
+    </script>
+
+{% endblock header %}
+
+{% block content %}
+<div style="padding: 0px 10px 10px 2px;">
+  <div class="container-fluid-md bg-white">
+      <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+      <div class="row">
+        <div class="text-justify col-md-8">
+          <p class="py-3 px-3 text-justify" style="font-size: 22px;"> 
+            Italy is considered a net importer of oil because national demand is mainly satisfied by import. Indeed, due to the low availability of oil reserves, Italy is strongly dependent on external countries in Middle East, Africa and Asia. Since, crude is generally transported by oil tankers to cover long distance, foreign crude reach Italy mainly by sea.<br><br>
+            In <b>{{year}}</b>, a total amount of <b>{{total_intake}}</b> Mton of crude was discharged in Italian ports (<b>{{variation}}</b>% with respect to the previous year).<br>
+            The quantity of crude oil delivered to Italy by origin country is reported in the graphs below which highlights that in <b>{{year}}</b> the majority of crude came from 
+            {% for key, value in percetages_dict.items %}
+              {%if forloop.last%}
+                  and <b>{{key}}</b>.
+              {%elif forloop.revcounter0 == 1 %}
+                <b>{{key}}</b>
+              {%else%}
+                <b>{{key}}</b>, 
+              {%endif%}
+            {%endfor%}
+            </p>
+            <div class="container" style="margin-left: 100px;">
+              {% autoescape off %}
+                  {{ world_plot }}
+              {% endautoescape %}
+            </div>
+          <p class="py-3 px-3 text-justify" style="font-size: 22px;"> 
+            {% for key, value in percetages_dict.items %}
+                {% if forloop.first %}  
+                    <b>{{key}}</b> accounted for almost <b>{{value}}</b>% of the total,
+                {%elif forloop.last%}
+                    and <b>{{key}}</b> for <b>{{value}}</b>%.
+                {%elif forloop.revcounter0 == 1 %}
+                  <b>{{key}}</b> for <b>{{value}}</b>%
+                {%else%}
+                    <b>{{key}}</b> for <b>{{value}}</b>%,
+                {% endif %}                 
+            {%endfor%}
+            In the Table below is reported the total amount of crude by supplier country and percentage changes with respect to the previous year.
+          </p>
+          
+          <div class="container" style="width:700px; height:700px; position: relative; margin-left:200px;">
+             {% autoescape off %}{{table}}{% endautoescape %}
+          </div>
+          <div class="container">
+            {% autoescape off %}
+                {{ group_bar }}
+            {% endautoescape %}
+          </div>
+          <p class="py-3 px-3 text-justify" style="font-size: 22px;">
+            There are several producing countries that do not have direct access to the sea, so they use foreign ports to export their crude oil and petroleum products. for this reason some countries such as Turkey and Russia export not only their oil raw materials but also those of neighboring countries.<br>
+            The graphs below present the most important exporting ports with their respective intake and share. 
+          </p>
+          <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <div class="carousel-item active" style="margin-left: 100px;">
+                {% autoescape off %}
+                    {{ intake_bar }}
+                {% endautoescape %}
+              </div>
+              <div class="carousel-item" style="margin-left: 100px;">
+                {% autoescape off %}
+                    {{ piechart }}
+                {% endautoescape %}
+              </div>
+            </div>
+            <button class="carousel-control-prev" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon"  aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>      
+      </div>
+      <div id='sidebar'class="col-md-4 bg-side">
+        {% if select_country %}
+          <h2 class="py-2">Country Selected: <b>{{country}}</b></h2>    
+          <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> <b>{{country}}</b> exported a total of <b>{{intake}}</b> tons of crude to Italy.<br>
+              {% if intake != 0 %}
+                  The Main corridors are: <br>
+                  <ul class="list-group list-group-flush"></ul>
+                      {%for key, value in corr_dict.items %}
+                          <li class="list-group-item list-group-item-info"><b>{{key}}</b> accounted for <b>{{value}}</b> Tons.</li> 
+                      {%endfor%}  
+                  </ul>
+              {%endif%}   
+          </p>
+        {%else%}
+          <h2 class="py-2">Please Select a Country </h2>
+          <p class="py-2" style="font-size: 18px;">Use the filter in the bar above to select the desire configuration.
+          <br>If you are only interested in change the year of the default story it is possible but anything will be updated on this side.</p>
+          <div class="container py-5" style="height: 500px; width: 400px;">
+            <img src= "{% static '/stories/images/cog.svg'%}" class="img-fluid" alt="">
+          </div>
+          {%endif%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+

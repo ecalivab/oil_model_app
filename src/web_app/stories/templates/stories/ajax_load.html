@@ -1,4 +1,6 @@
-<option value="">--Select {{select}}--</option>
+{% if select != "Sidebar" and select != "Sidebar_DP"%}
+    <option value="">--Select {{select}}--</option>
+{% endif %}
 
 {% if select == "Corridor" %}
     {% for subcat in corridor_list %}
@@ -23,4 +25,26 @@
     {% for subcat in discharge_port_list %}
         <option value="{{ subcat.corridor_id }}">{{ subcat.discharge_port}}</option>
     {% endfor %}
+{% endif %}
+
+{% if select == "Sidebar" %}
+    <h2 class="py-2">Country Selected: <b>{{country}}</b></h2>    
+    <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> <b>{{country}}</b> exported a total of <b>{{intake|floatformat:"0"}}</b> tons of crude to Italy.<br>
+        {% if intake != 0 %}
+            The main corridors are the following:
+            <ul class="list-group list-group-flush"></ul>
+                {%for key, value in corr_dict.items %}
+                <li class="list-group-item">Corridor: <b>{{key}}</b> exported <b>{{value.0|floatformat:"0"}}</b> tons accounted for <b>{{value.1}}</b>% of the 
+                    total yearly intake and <b>{{value.2}}</b>% of <b>{{country}}</b> total.</li>
+                {%endfor%}
+            </u>
+        {%endif%}   
+    </p>
+{% endif %}
+
+
+{% if select == "Sidebar_DP" %}
+    <h2 class="py-2">Port Selected: <b>{{discharge_port}}</b></h2>    
+    <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> <b>{{discharge_port}}</b> exported a total of <b>{{intake|floatformat:"0"}}</b> tons of crude to Italy.<br>
+    </p>
 {% endif %}
