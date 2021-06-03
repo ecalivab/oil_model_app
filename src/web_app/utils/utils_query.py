@@ -1,22 +1,29 @@
-from os import execle
 import pandas as pd
 import numpy as np
 from stories.models import CorridorIntake, Corridor, CommodityLvh , CorridorFailure, Pipeline
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-
+import plotly.graph_objects as go
+import plotly.express as px
 
 
 def common_querys(year, crude_flag):
+    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country','discharge_port','load_port'))
+    
     if crude_flag == 1:
-        df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country','discharge_port','load_port'))
         df_intake =   pd.DataFrame.from_records(
             CorridorIntake.objects.filter(Q(date__year=year), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','commodity','date'))
         intake_df_previous = pd.DataFrame.from_records(
         CorridorIntake.objects.filter(Q(date__year = int(year)-1), Q(commodity=66)|Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','commodity','date'))
 
-        return df_corridor, df_intake, intake_df_previous
+    else:
+        df_intake =   pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(Q(date__year=year), ~Q(commodity=54), ~Q(commodity=66), ~Q(commodity=22), ~Q(commodity=77)).values('corridor','intake','commodity','date'))
+        intake_df_previous = pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(Q(date__year = int(year)-1), ~Q(commodity=54), ~Q(commodity=66), ~Q(commodity=22), ~Q(commodity=77)).values('corridor','intake','commodity','date'))
+    
+    return df_corridor, df_intake, intake_df_previous
 
 def total_intake_variable(start_date, end_date):
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
@@ -317,3 +324,52 @@ def sidebar_discharge_port_oil(dp, year):
 
     return df_dict, dp_intake    
 
+def sidebar_commodity_dp(dp, year):
+    query_df = pd.DataFrame.from_records(Corridor.objects.filter(discharge_port=dp).values('corridor_id', 'load_port'))
+    df_intake =   pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(Q(date__year=year), ~Q(commodity=54), ~Q(commodity=66), ~Q(commodity=22), ~Q(commodity=77)).values('corridor','intake','commodity'))
+    df_intake.columns = ['corridor_id', 'intake', 'commodity_id']
+    lvh_df = pd.DataFrame.from_records(CommodityLvh.objects.all().values('commodity_id', 'name'))
+
+    dp_intake = 0
+    df_dict = {}
+
+    if df_intake.empty:
+        fig = go.Figure()
+        fig.update_layout(
+            title_text='Intake Commodity by Discharge Port',
+            width=600,
+            height=300,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        df_intake.columns = ['corridor_id', 'intake','commodity_id']
+        df = pd.merge(query_df,df_intake,on=['corridor_id'],how="inner",indicator=False)
+        df = pd.merge(df,lvh_df, on=['commodity_id'], how='outer', indicator=True)
+        df = df.groupby(['load_port','name']).sum().reset_index()
+        df = df.drop(['corridor_id', 'commodity_id'], axis = 1)
+        
+        df = df.sort_values(by=['intake'],ascending=False)
+        dp_intake = df['intake'].sum()
+        df_dict = df.set_index('load_port').T.to_dict('list')
+
+        fig = px.sunburst(df, path=['name', 'load_port'], values='intake', width=575, height=550)
+        fig.update_layout(
+            title = 'Share of Commodity by Load Port',
+            font_size = 19,
+        )
+        fig.update_traces(textinfo="label+percent entry")
+
+    return fig, dp_intake, df_dict

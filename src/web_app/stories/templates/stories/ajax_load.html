@@ -1,4 +1,4 @@
-{% if select != "Sidebar" and select != "Sidebar_DP"%}
+{% if select != "Sidebar" and select != "Sidebar_DP" and select != "SidebarCommodityDP" %}
     <option value="">--Select {{select}}--</option>
 {% endif %}
 
@@ -45,6 +45,31 @@
 
 {% if select == "Sidebar_DP" %}
     <h2 class="py-2">Port Selected: <b>{{discharge_port}}</b></h2>    
-    <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> <b>{{discharge_port}}</b> exported a total of <b>{{intake|floatformat:"0"}}</b> tons of crude to Italy.<br>
+    <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> a total of amount of <b>{{intake|floatformat:"0"}}</b> tons of crude pass through <b>{{discharge_port}}</b>.<br>
+        {% if intake != 0 %}
+        The main ports of procedence are the following:
+        <ul class="list-group list-group-flush"></ul>
+            {%for key, value in dict.items %}
+            <li class="list-group-item">From port: <b>{{key}}</b> were discharge a total of <b>{{value.0|floatformat:"0"}}</b> tons.</li>
+            {%endfor%}
+        </u>
+    {%endif%}   
     </p>
+{% endif %}
+
+{% if select == "SidebarCommodityDP" %}
+    <h2 class="py-2">Port Selected: <b>{{discharge_port}}</b></h2> 
+    <p class="py-2" style="font-size: 18px;">In <b>{{year}}</b> a total of amount of <b>{{intake|floatformat:"0"}}</b> tons of crude pass through <b>{{discharge_port}}</b>.<br>
+        {% if intake != 0 %}
+        The main ports of procedence for petroleum products are the following:
+        <ul class="list-group list-group-flush"></ul>
+            {%for key, value in dict.items %}
+                <li class="list-group-item">From port: <b>{{key}}</b> were discharged a total of <b>{{value.1|floatformat:"0"}}</b> tons of <b>{{value.0}}</b>.</li>
+            {%endfor%}
+        </u>
+    {%endif%}   
+    </p>
+    <div class="container-fluid" style="position: relative; margin-right:0px;">
+        {% autoescape off %}{{ fig }}{% endautoescape %}
+    </div>
 {% endif %}

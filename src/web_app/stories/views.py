@@ -75,7 +75,6 @@ def logout_view(request):
 	logout(request)
 	return redirect('login')
 
-
 def sign_up_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -138,12 +137,9 @@ def activate_view (request, uidb64, token):
         messages.error(request, 'Activation link is invalid!' )
         return redirect('login')
 
-
 def princing_view(request):
     context ={}
     return render(request, 'stories/pricing.html',context)
-
-
 
 def story_view (request):   
     name = None
@@ -168,8 +164,6 @@ def story_view (request):
         return JsonResponse(result, safe=False)
 
     return render(request, 'stories/crude_story.html', context)
-
-
 
 def story_ajax_view (request):
     corridor = None
@@ -196,7 +190,7 @@ def story_ajax_view (request):
             CommodityLvh.objects.all().values('commodity_id', 'name'))
         
         bar = intake_corridor_barplot(corridor_intake, lhv)
-        bar_div = plot(bar, output_type='div' )
+        bar_div = plot(bar, output_type='div', include_plotlyjs=False)
 
    
     #World Map Color Plot
@@ -205,7 +199,7 @@ def story_ajax_view (request):
         CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','commodity','date'))
 
     fig = world_choropleth_map_intake(corridor_df, intake_df)
-    world_plot_div = plot(fig, output_type='div')
+    world_plot_div = plot(fig, output_type='div', include_plotlyjs=False)
 
     total_intake, variation = total_intake_variable(start_date, end_date)
     df_ports = get_port_max_intake(start_date, end_date)
@@ -265,11 +259,11 @@ def story_oil_view (request):
 
     #World Map Color Plot
     fig = world_choropleth_map_risk(total_risk_df)
-    world_plot_div = plot(fig, output_type='div')
+    world_plot_div = plot(fig, output_type='div', include_plotlyjs=False)
     intake_bar = horizontal_bar_intake(corridor_df, intake_df)
-    intake_bar_div = plot(intake_bar, output_type='div')
+    intake_bar_div = plot(intake_bar, output_type='div', include_plotlyjs=False)
     piechart = piechart_intake(corridor_df, intake_df)
-    piechart_div = plot(piechart, output_type='div')
+    piechart_div = plot(piechart, output_type='div', include_plotlyjs=False)
  
     context = {
         'corridors' : Corridor.objects.all().distinct('load_country'),
@@ -314,13 +308,13 @@ def oil_intake_story_view (request):
 
     #Plots
     fig = world_choropleth_map_intake(corridor_df, intake_df)
-    world_plot_div = plot(fig, output_type='div')
+    world_plot_div = plot(fig, output_type='div', include_plotlyjs=False)
     intake_bar = horizontal_bar_intake_load_port(corridor_df, intake_df)
-    intake_bar_div = plot(intake_bar, output_type='div')
+    intake_bar_div = plot(intake_bar, output_type='div', include_plotlyjs=False)
     group_bar = group_bar_intake_country(corridor_df, intake_df, intake_previous_df, year)
-    group_bar_div = plot(group_bar, output_type='div')
+    group_bar_div = plot(group_bar, output_type='div', include_plotlyjs=False)
     piechart = piechart_intake_load_country(corridor_df, intake_df)
-    piechart_div = plot(piechart, output_type='div')
+    piechart_div = plot(piechart, output_type='div', include_plotlyjs=False)
 
     context = {
         'corridors': Corridor.objects.all().distinct('load_country'),
@@ -352,9 +346,9 @@ def discharge_port_oil_story_view(request):
     total_intake, variation = intake_variation_year(intake_df, intake_previous_df)
 
     barfig = bar_plot_oil_dicharge_port(corridor_df, intake_df)
-    barplot_div = plot(barfig, output_type='div')
+    barplot_div = plot(barfig, output_type='div', include_plotlyjs=False)
     piefig = piechart_discharge_port_oil(corridor_df, intake_df)
-    piechart_div = plot(piefig, output_type='div')
+    piechart_div = plot(piefig, output_type='div', include_plotlyjs=False)
 
     context = {
         'corridors': Corridor.objects.all().distinct('discharge_port'),
@@ -368,6 +362,35 @@ def discharge_port_oil_story_view(request):
     }
 
     return render(request, 'stories/oil_discharge_port_story.html', context)
+
+def discharge_port_commodity_view(request):
+    current_date = datetime.today()
+    year = current_date.year
+    current_date = current_date.strftime('%d/%m/%Y')
+
+    if request.method == 'POST':
+        year = int(request.POST.get('year'))
+
+    lvh_df = pd.DataFrame.from_records(CommodityLvh.objects.all().values('commodity_id', 'name'))
+    corridor_df, intake_df, intake_previous_df = common_querys(year, crude_flag = 0)
+    total_intake, variation = intake_variation_year(intake_df, intake_previous_df)
+
+    stackfig = stack_bar_chart_commodity(corridor_df, intake_df, lvh_df)
+    stackplot_div = plot(stackfig, output_type='div', include_plotlyjs=False)
+    sunburstfig = sunburst_commodity_dp(corridor_df, intake_df, lvh_df)
+    sunburstplot_div = plot(sunburstfig, output_type='div', include_plotlyjs=False)
+    context = {
+        'corridors': Corridor.objects.all().distinct('discharge_port'),
+        'years': CorridorIntake.objects.dates('date','year'),
+        'curr_date': current_date,
+        'year': year,
+        'total_intake': total_intake,
+        'variation': variation,
+        'stackplot': stackplot_div,
+        'sunburst': sunburstplot_div,
+    }
+
+    return render(request, 'stories/commodity_discharge_port_story.html', context)
     
 def load_corridor(request):
     print(request.GET)
@@ -439,9 +462,29 @@ def sidebar_oil_intake (request):
 def sidebar_oil_discharge_intake (request):
     discharge_port = request.GET.get('discharge_port')
     year = request.GET.get('year')
-    sidebar_discharge_port_oil(discharge_port, year)
+    dict_dp, intake_dp = sidebar_discharge_port_oil(discharge_port, year)
     context = {
         'discharge_port': discharge_port,
+        'dict': dict_dp,
+        'intake': intake_dp,
         'select': "Sidebar_DP",
+    }
+    return render(request, 'stories/ajax_load.html', context)
+
+def sidebar_commodity_discharge_intake(request):
+    discharge_port = request.GET.get('discharge_port')
+    year = request.GET.get('year')
+
+    fig, intake, dict_dp =sidebar_commodity_dp(discharge_port, year)
+
+    fig_div = plot(fig, output_type='div', include_plotlyjs=False)
+
+    context = {
+        'discharge_port': discharge_port,
+        'fig': fig_div,
+        'year': year,
+        'intake': intake,
+        'dict': dict_dp,
+        'select': "SidebarCommodityDP",
     }
     return render(request, 'stories/ajax_load.html', context)

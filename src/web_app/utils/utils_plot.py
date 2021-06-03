@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
-from stories.models import Corridor, CorridorIntake 
-from django.db.models import Q
+import plotly.express as px
 
 #World Thematic Map
 country_code_dict = {
@@ -322,7 +321,6 @@ def world_choropleth_map_intake (df_corridor, df_intake):
 
     return fig
     
-
 def intake_corridor_barplot(intake, lvh):
     if intake.empty:
          barplot = go.Figure()
@@ -366,12 +364,11 @@ def intake_corridor_barplot(intake, lvh):
     
     return barplot
 
-
 def horizontal_bar_intake(df_corridor, df_intake):
 
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       barplot = go.Figure()
+       barplot.update_layout(
             title_text='Crude Intake by Country',
             width=950,
             height=600,
@@ -417,8 +414,8 @@ def horizontal_bar_intake(df_corridor, df_intake):
 def horizontal_bar_intake_load_port(df_corridor, df_intake):
 
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       barplot = go.Figure()
+       barplot.update_layout(
             title_text='Total Intake by Load Port [Mtons]',
             width=950,
             height=600,
@@ -466,8 +463,8 @@ def horizontal_bar_intake_load_port(df_corridor, df_intake):
 def piechart_intake(df_corridor, df_intake):
 
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       piechart = go.Figure()
+       piechart.update_layout(
             title_text='Total Intake per Discharge Port',
             width=950,
             height=600,
@@ -655,8 +652,8 @@ def group_bar_intake_country(corridor_df, intake_df, intake_previous_df, year):
 def piechart_intake_load_country(df_corridor, df_intake):
 
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       piechart = go.Figure()
+       piechart.update_layout(
             title_text='Shares of Crude Intake by Load Port',
             width=950,
             height=600,
@@ -709,8 +706,8 @@ def piechart_intake_load_country(df_corridor, df_intake):
     
 def bar_plot_oil_dicharge_port (df_corridor, df_intake):
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       barplot = go.Figure()
+       barplot.update_layout(
             title_text='Total Intake by Discharge Port [Mtons]',
             width=950,
             height=600,
@@ -755,8 +752,8 @@ def bar_plot_oil_dicharge_port (df_corridor, df_intake):
 
 def piechart_discharge_port_oil(df_corridor, df_intake):
     if df_intake.empty:
-       fig = go.Figure()
-       fig.update_layout(
+       piechart = go.Figure()
+       piechart.update_layout(
             title_text='Shares of Crude Intake by Discharge Port',
             width=950,
             height=600,
@@ -805,3 +802,89 @@ def piechart_discharge_port_oil(df_corridor, df_intake):
                         )
     
     return piechart
+
+
+def stack_bar_chart_commodity(df_corridor, df_intake, df_lvh):
+    if df_intake.empty:
+        fig = go.Figure()
+        fig.update_layout(
+            title_text='Intake Commodity by Discharge Port',
+            width=1100,
+            height=700,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+
+        df_intake.columns = ['corridor_id', 'intake','commodity_id','date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="inner",indicator=False)
+        df = df.drop(['load_country','load_port','date','corridor_id'], axis= 1)
+        df = pd.merge(df,df_lvh, on=['commodity_id'], how='outer', indicator=True)
+        df = df.groupby(['discharge_port','name']).sum().reset_index() 
+        data = [go.Bar(name=group, x=dfg['discharge_port'], y=dfg['intake']) for group, dfg in df.groupby(by='name')]
+
+        # plot the figure
+        fig = go.Figure(data)
+        fig.update_layout(
+            barmode='stack', 
+            title='Intake Commodity by Discharge Port',
+            width = 1050,
+            height = 750,
+            font=dict(
+                size=18,
+                ),
+            #xaxis_title='Name',
+            #yaxis=dict(tickformat="%",)
+            
+            )
+    
+    return fig
+    
+def sunburst_commodity_dp(df_corridor, df_intake, df_lvh):
+    if df_intake.empty:
+        fig = go.Figure()
+        fig.update_layout(
+            title_text='Intake Commodity by Discharge Port',
+            width=1100,
+            height=700,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+
+        df_intake.columns = ['corridor_id', 'intake','commodity_id','date']
+        df = pd.merge(df_corridor,df_intake,on=['corridor_id'],how="inner",indicator=False)
+        df = df.drop(['load_country','load_port','date','corridor_id'], axis= 1)
+        df = pd.merge(df,df_lvh, on=['commodity_id'], how='outer', indicator=True)
+        df = df.groupby(['discharge_port','name']).sum().reset_index()
+
+        fig = px.sunburst(df, path=['name', 'discharge_port'], values='intake', width=1100, height=800)
+        fig.update_layout(
+            title = 'Share of Commodity by Port',
+            font_size = 20,
+        )
+        fig.update_traces(textinfo="label+percent entry")
+    return fig
+

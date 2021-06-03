@@ -10,6 +10,8 @@ urlpatterns = [
     path('oil/', story_oil_view, name='story_oil'),
     path('oil_intake/', oil_intake_story_view, name='story_oil_intake'),
     path('oil_discharge_port/', discharge_port_oil_story_view, name='story_dicharge_port_oil'),
+    path('commodity_discharge_port/', discharge_port_commodity_view, name='story_dicharge_port_commodity'),
+    
 
     path('ajax/load_corrdior/', load_corridor, name='ajax_load_corridor'),
     path('ajax/load_pipe/', load_pipe, name='ajax_load_pipe'),
@@ -17,6 +19,7 @@ urlpatterns = [
     path('ajax/discharge_port/', discharge_port, name='ajax_discharge_port'),
     path('ajax/side_bar_intake/', sidebar_oil_intake, name='ajax_sidebar_oil_intake'),
     path('ajax/side_bar_dicharge_port_oil/', sidebar_oil_discharge_intake, name='ajax_sidebar_dicharge_port_oil'),
+    path('ajax/side_bar_dicharge_port_commodity/', sidebar_commodity_discharge_intake, name='ajax_sidebar_dicharge_port_commodity'),
 
     path('pricing/', princing_view, name='pricing'),
     path('contact/', contact_view, name='contact'),

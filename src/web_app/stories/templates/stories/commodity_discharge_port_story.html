@@ -5,7 +5,7 @@
 
 {% block header %}
     <div class="container-fluid bg-light">
-        <h1 class="h1-left">Major Italian Oil Supply Ports</h1>
+        <h1 class="h1-left">Major Italian Petroleum Products Supply Ports</h1>
         <div class="btn-group btn-block">
           <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
             <select class="text-center" id="sel_year" name="year">
@@ -35,7 +35,7 @@
       $("#sel_discharge_port").change(function () {
               var discharge_port_sel = $(this).val();  // get the selected country ID from the HTML input
               $.ajax({                       // initialize an AJAX request
-                url: "{% url 'ajax_sidebar_dicharge_port_oil' %}", // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                url: "{% url 'ajax_sidebar_dicharge_port_commodity' %}", // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
                 data: {
                   'discharge_port': discharge_port_sel, // add the country id to the GET parameters
                   'year': "{{year | safe}}", 
@@ -65,20 +65,20 @@
         <div class="row">
           <div class="text-justify col-md-8">
             <p class="py-3 px-3 text-justify" style="font-size: 22px;"> 
-                Crude oil imported by Italy mainly come from countries in Africa, Middle East and Asia. Since, in case of long distances, crude is generally transported by oil tankers, foreign crudes reach Italy mainly by sea. 
-                For this reason, Italian ports play a crucial role for oil supply system. In <b>{{year}}</b>, a total amount of <b>{{total_intake}}</b> Mton of crude was discharged in Italian ports (<b>{{variation}}</b>% with respect to the previous year).<br>
-                Trieste is most of the time is the busiest Italian port for the crude supply. The reason lies in its strategic position: the port of Trieste is in fact directly connected to the oil pipeline (owned by the multinational company Trans-Alpinen Leitung - TAL) that connects Italy to foreign refineries (Germany, Austria and the Czech Republic). In the graph below are summarized the distribution of discharged crude by Italian port.
+                If on one hand, Italy is a net importer of crude due to the low national production; on the other, Italian refining activity produce several oil products 
+                which allows to satisfy partly internal demand and consequently to import less from other countries. In year <b>{{year}}</b>, a total amount of <b>{{total_intake}}</b> Mton of petroleum products were discharged in Italian ports (<b>{{variation}}</b>% with respect to the previous year).  
+                Instead of crude, the amount of petroleum products discharged by port is well distributed:
             </p>
             <div id="carousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                   <div class="carousel-item active" style="margin-left: 100px;">
                     {% autoescape off %}
-                        {{ barplot }}
+                        {{ stackplot }}
                     {% endautoescape %}
                   </div>
-                  <div class="carousel-item" style="margin-left: 100px;">
+                  <div class="carousel-item" style="margin-left: 10px;">
                     {% autoescape off %}
-                        {{ piechart }}
+                        {{ sunburst }}
                     {% endautoescape %}
                   </div>
                 </div>
