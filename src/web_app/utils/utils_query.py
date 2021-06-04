@@ -25,6 +25,18 @@ def common_querys(year, crude_flag):
     
     return df_corridor, df_intake, intake_df_previous
 
+def common_data_range_querys(start_date, end_date, crude_flag):
+    df_corridor = pd.DataFrame.from_records(Corridor.objects.all().values('corridor_id','load_country','discharge_port','load_port'))
+
+    if crude_flag == 1:
+        df_intake =   pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), Q(commodity=66)| Q(commodity=54)|Q(commodity=22)|Q(commodity=77)).values('corridor','intake','commodity','date'))
+    else:
+         df_intake =   pd.DataFrame.from_records(
+            CorridorIntake.objects.filter(Q(date__lte=end_date), Q(date__gte=start_date), ~Q(commodity=54), ~Q(commodity=66), ~Q(commodity=22), ~Q(commodity=77)).values('corridor','intake','commodity','date'))
+
+    return df_corridor, df_intake
+
 def total_intake_variable(start_date, end_date):
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -51,7 +63,6 @@ def total_intake_variable(start_date, end_date):
     
     return total_intake, variation
 
-
 def fix_time_format(daterange):
     daterange = daterange.split("-")
     end_date = daterange[1].strip()
@@ -64,7 +75,6 @@ def fix_time_format(daterange):
     start_date = start_date.strftime('%Y-%m-%d')
 
     return start_date, end_date, current_date, first_date
-
 
 def get_port_max_intake(start_date, end_date):
     intake_df =   pd.DataFrame.from_records(
@@ -220,7 +230,6 @@ def side_bar_data_crude(corridor_id,year, percentage_df):
 
     return country_dict, load_dict, dicharge_dict
     
-
 def risk_side_bar_crude(pipeline_id, corridor_id, year):
     risk = 0.0
 
@@ -267,20 +276,32 @@ def table_with_variations(df_corridor, df_intake, df_intake_previous, year):
         df_last = df_last.groupby(['load_country']).sum().reset_index()
 
         new_df = pd.merge(df,df_last,on=['load_country'],how="left")
-        
-        new_df['percentage'] = new_df.apply(lambda row: percentual_var(row['intake_x'], row['intake_y']), axis = 1)
         new_df = new_df.sort_values(by=['intake_x'],ascending=False)
+ 
+        new_df['percentage'] = new_df.apply(lambda row: percentual_var(row['intake_x'], row['intake_y']), axis = 1)
+        top_ten = new_df.nlargest(10,'intake_x')
+        other_df = new_df.iloc[11:]
+        
+        other_x = other_df['intake_x'].sum()
+        other_y = other_df['intake_y'].sum()
+        variation_other = percentual_var(other_x, other_y)
+        new_df = top_ten.append({'load_country': 'Other' , 'intake_x':other_x , 'intake_y': other_y, 'percentage': variation_other}, ignore_index=True)
+
         new_df['intake_x'] = new_df['intake_x'].map(lambda x: "{:,}".format(int(x)), na_action='ignore')
         new_df['intake_y'] = new_df['intake_y'].map(lambda x: "{:,}".format(int(x)), na_action='ignore')
         new_df.columns = ['Country', 'Intake ' + str(year) + ' [Tons]', 'Intake ' + str(year-1) +  ' [Tons]','Var. [%]']
+
     else:
         new_df = df.copy(deep=True)
+        new_df = new_df.nlargest(10,'intake')
+        new_df['intake'] = new_df['intake'].map(lambda x: "{:,}".format(int(x)), na_action='ignore')
         new_df['intake_y'] = np.nan
         new_df['percentage'] = np.nan
+       
         new_df.columns = ['Country', 'Intake ' + str(year) + ' [Tons]', 'Intake ' + str(year-1) +  ' [Tons]','Var. [%]']
+        
 
     return new_df
-
 
 def sidebar_oil_intake_content(country, year, year_intake):
     df_corridor = pd.DataFrame.from_records(Corridor.objects.filter(load_country = country).values('corridor_id', 'corridor_name'))

@@ -1,4 +1,4 @@
-{% if select != "Sidebar" and select != "Sidebar_DP" and select != "SidebarCommodityDP" %}
+{% if select != "Sidebar" and select != "Sidebar_DP" and select != "SidebarCommodityDP" and select != "RiskOil" %}
     <option value="">--Select {{select}}--</option>
 {% endif %}
 
@@ -72,4 +72,18 @@
     <div class="container-fluid" style="position: relative; margin-right:0px;">
         {% autoescape off %}{{ fig }}{% endautoescape %}
     </div>
+{% endif %}
+
+{% if select == "RiskOil" %}
+    <h2 class="py-2">Country Selected: <b>{{load_country}}</b></h2> 
+    <p class="py-2" style="font-size: 18px;">From <b>{{start_date}}</b> to <b>{{end_date}}</b> a total of amount of risk is <b>{{total_risk|floatformat:"0"}}</b> toe from <b>{{total_intake|floatformat:"0"}}</b> tons of crude exported from <b>{{load_country}}</b>.<br>
+        {% if corridor_dict %}
+        The main ports of procedence for petroleum products are the following:
+        <ul class="list-group list-group-flush"></ul>
+            {%for key, value in corridor_dict.items %}
+                <li class="list-group-item">Corrdior: <b>{{key}}</b> present a risk of <b>{{value.0|floatformat:"0"}}</b> toe by transportin <b>{{value.1|floatformat:"0"}}</b> tons of crude.</li>
+            {%endfor%}
+        </u>
+    {%endif%}   
+    </p>
 {% endif %}

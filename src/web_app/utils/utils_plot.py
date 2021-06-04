@@ -702,7 +702,6 @@ def piechart_intake_load_country(df_corridor, df_intake):
                         )
     
     return piechart
-
     
 def bar_plot_oil_dicharge_port (df_corridor, df_intake):
     if df_intake.empty:
@@ -803,7 +802,6 @@ def piechart_discharge_port_oil(df_corridor, df_intake):
     
     return piechart
 
-
 def stack_bar_chart_commodity(df_corridor, df_intake, df_lvh):
     if df_intake.empty:
         fig = go.Figure()
@@ -888,3 +886,83 @@ def sunburst_commodity_dp(df_corridor, df_intake, df_lvh):
         fig.update_traces(textinfo="label+percent entry")
     return fig
 
+def group_bar_risk_country_oil(total_risk_df):
+    if total_risk_df.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Risk by Load Country',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+
+    else:
+        fig = go.Figure(data=[
+        go.Bar(name='Energy Risk [Mtoe]', x=total_risk_df['Country'], y=total_risk_df['Energy Risk [Mtoe]']),
+        go.Bar(name='Intake [Mtons]', x=total_risk_df['Country'], y=total_risk_df['Intake [Mtoe]'])
+        ])
+        # Change the bar mode
+        fig.update_layout(
+            barmode='group',
+            title='Total Risk by Load Country',
+            width = 1100,
+            height = 750,
+            font=dict(
+                size=18,
+                ),
+            )
+            
+
+    return fig
+
+def piechart_risk_country_oil(total_risk_df):
+    if total_risk_df.empty:
+       piechart = go.Figure()
+       piechart.update_layout(
+            title_text='Shares of Risk by Load Country',
+            width=950,
+            height=600,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Date. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 28
+                    }
+                }
+            ]
+        )
+    else:
+        top_ten = total_risk_df.nlargest(10, 'Energy Risk [Mtoe]')
+        piechart = go.Figure([go.Pie(labels=top_ten['Country'], values=top_ten['Share Risk [%]'],
+                        name='test',
+                        textinfo='label+percent',
+                        insidetextorientation='radial'
+                       )])
+
+        piechart.update_layout(
+                        title='Shares of Risk by Load Country',
+                        width = 1100,
+                        height = 750,
+                        font=dict(
+                            size=18,
+                            ),
+                        )
+    
+    return piechart

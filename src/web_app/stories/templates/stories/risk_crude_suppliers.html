@@ -1,0 +1,147 @@
+{% extends "stories/base.html"%}
+{% load custom_template_tags %}
+{% load static %}
+
+
+{% block header %}
+    <div class="container-fluid bg-light">
+        <h1 class="h1-left">Critical Crude Suppliers For Italy</h1>
+        <div class="btn-group btn-block">
+          <form class="h1-left pb-2 text" name="myform" id ="myform" method="POST"> {% csrf_token %}
+            <input type="text" name="daterange" value="01/01/2018 - 01/02/2018"/>
+            <select class="text-center" id="sel_load_country" name="sel_load_country">
+              <option value="" selected disabled hidden>--Select Load Country--</option>
+              {% for corridor in corridors%} 
+                <option value="{{corridor.load_country}}"> {{corridor.load_country}}</option>
+              {%endfor%}     
+          </select>
+
+            <button id='filter' type="submit" class="btn btn-primary">Filter</button>      
+          </form>
+      </div>
+      
+    </div>
+    
+    <script>
+        $("#sel_load_country").change(function () {
+          var load_country_sel = $(this).val();  // get the selected country ID from the HTML input
+          $.ajax({                       // initialize an AJAX request
+              url: "{% url 'ajax_sidebar_risk_oil' %}", // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+              data: {
+                'load_country': load_country_sel, // add the country id to the GET parameters
+                'start_date': "{{start_date|safe}}",
+                'end_date': "{{curr_date|safe}}",
+              },
+              success: function (data) {   // `data` is the return of the `load_cities` view function
+                $("#sidebar").html(data);  // replace the contents of the city input with the data that came from the server
+              }
+            });  
+         });
+      
+       $(function() {
+            $('input[name="daterange"]').daterangepicker({
+            showDropdowns: true,
+            opens: 'center',
+            format: 'YYYY-MM-DD'
+            }, function(start, end, label) {
+                console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+                $.ajax({ 
+                    data: {
+                    'start_date': start.format('YYYY-MM-DD'),
+                    'end_date' : end.format('YYYY-MM-DD')
+                    }
+                    
+                })
+                //alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'))     
+            });
+        });
+       
+      //$('body').html($('body').html().replace(/Egypt, Arab Rep./g, 'Egypt')) 
+    </script>
+
+{% endblock header %}
+
+{% block content %}
+<div style="padding: 0px 10px 10px 2px;">
+    <div class="container-fluid-md bg-white">
+        <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+        <div class="row">
+          <div class="text-justify col-md-8">
+            <p class="py-3 px-3 text-justify" style="font-size: 22px;"> 
+                The energy risk associated to each supplier depends on the intrinsic risk of the country (probability of corridor failure) and on 
+                the amount of commodity imported. Some of the major producing countries do not have direct access to the sea (such as Azerbaijan or Kazakhstan) 
+                or do not have sufficient maritime infrastructure, thus they rely on third-country for exportation (such as Turkey or Russia). Indeed, pipelines 
+                play a crucial role in oil supply to Italy especially from Asia and Middle East, linking producing countries with ports connected with Mediterranean Sea. 
+                <br><br>
+                From <b>{{start_date}}</b> to <b>{{curr_date}}</b>, the overall energy risk associated to oil supply, relying on both maritime and captive threats, amounted to <b>{{total_risk}}</b> Mtoe. 
+                The most critical countries were: 
+                {% for country in most_list %}
+                  {% if forloop.last %}
+                    and <b>{{country}}</b> instead
+                  {% else %}
+                    <b>{{country}}</b>,
+                  {% endif %} 
+                {%endfor%}
+
+                {% for country in less_list %}
+                  {% if forloop.last %}
+                    and <b>{{country}}</b> reported the lowest risk.
+                  {% else %}
+                    <b>{{country}}</b>,
+                  {% endif %} 
+                {%endfor%}
+            </p>
+            <p class="py-3 px-3" style="font-size: 22px; position: relative; margin-left:400px;"> 
+              Top Three Risk Countries
+            </p> 
+            <div class="container" style="width:650px; position: relative; margin-left:200px;">
+              {% autoescape off %}{{top_three}}{% endautoescape %}
+            </div>
+            <p class="py-3 px-3" style="font-size: 22px;position: relative; margin-left:400px;"> 
+              Tail Three Risk Countries
+            </p> 
+            <div class="container" style="width:650px; position: relative; margin-left:200px;">  
+              {% autoescape off %}{{tail_three}}{% endautoescape %}
+            </div>
+
+            <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active" style="margin-left: 100px;">
+                    {% autoescape off %}
+                        {{ barplot }}
+                    {% endautoescape %}
+                  </div>
+                  <div class="carousel-item" style="margin-left: 100px;">
+                    {% autoescape off %}
+                        {{ piechart }}
+                    {% endautoescape %}
+                  </div>
+                </div>
+                <button class="carousel-control-prev" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon"  aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" style=" filter: invert(100%);" type="button" data-bs-target="#carousel" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>   
+
+        </div>   
+        <div id='sidebar'class="col-md-4 bg-side">
+          {% if select_dicharge_port %}
+           AJAX
+          {%else%}
+            <h2 class="py-2">Please Select a Country </h2>
+            <p class="py-2" style="font-size: 18px;">Use the filter in the bar above to select the desire configuration.
+            <br>If you are only interested in change the year of the default story it is possible but anything will be updated on this side.</p>
+            <div class="container py-5" style="height: 500px; width: 400px;">
+              <img src= "{% static '/stories/images/cog.svg'%}" class="img-fluid" alt="">
+            </div>
+            {%endif%}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% endblock content %}

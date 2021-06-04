@@ -391,7 +391,59 @@ def discharge_port_commodity_view(request):
     }
 
     return render(request, 'stories/commodity_discharge_port_story.html', context)
-    
+
+def risk_crude_suppliers_view(request):
+    current_date = datetime.today().strftime('%m/%d/%Y')
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    year = current_date.split("/")[2]
+    first_date = "01/01/%s" % year
+    start_date = "%s-01-01" % year
+
+    if request.method == 'POST':
+        daterange = request.POST.get('daterange')
+        #Fix date formats to make them compatible 
+        start_date, end_date, current_date, first_date = fix_time_format(daterange)
+
+    #corridor_df, intake_df = common_data_range_querys(start_date, end_date, 1)
+    total_risk_df, top_three, tail_three, total_risk, corridor_country_df = risk_corridor_datarange_crude(start_date, end_date)
+    most_list = top_three['Country'].to_list()
+    less_list = tail_three['Country'].to_list()
+
+    top_three['Energy Risk [Mtoe]'] = top_three['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),2))
+    top_three['Intake [Mtoe]'] = top_three['Intake [Mtoe]'].apply(lambda x: round((x/1000000),2))
+
+    tail_three['Energy Risk [Mtoe]'] = tail_three['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),5))
+    tail_three['Intake [Mtoe]'] = tail_three['Intake [Mtoe]'].apply(lambda x: round((x/1000000),5))
+
+    total_risk_df['Energy Risk [Mtoe]'] = total_risk_df['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),2))
+    total_risk_df['Intake [Mtoe]'] = total_risk_df['Intake [Mtoe]'].apply(lambda x: round((x/1000000),2))
+
+    top_table_df = top_three.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
+    tail_table_df = tail_three.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
+
+    barplot = group_bar_risk_country_oil(total_risk_df)
+    barplot_div = plot(barplot, output_type='div', include_plotlyjs=False)
+    pierchart = piechart_risk_country_oil(total_risk_df)
+    piechart_div =  plot(pierchart, output_type='div', include_plotlyjs=False)
+
+    request.session['risk_df'] = corridor_country_df.to_dict()
+
+    context = {
+        'corridors': Corridor.objects.all().distinct('load_country'),
+        'curr_date': current_date,
+        'start_date': first_date, 
+        'most_list': most_list,
+        'less_list': less_list,
+        'top_three': top_table_df,
+        'tail_three': tail_table_df,
+        'total_risk': total_risk,
+        'barplot': barplot_div,
+        'piechart': piechart_div,
+    }
+    return render(request, 'stories/risk_crude_suppliers.html', context)
+
+
+#AJAX VIEWS
 def load_corridor(request):
     print(request.GET)
     l_country = request.GET.get('country')
@@ -402,7 +454,6 @@ def load_corridor(request):
     }
     return render(request, 'stories/ajax_load.html', context)
     
-
 def load_pipe(request):
     pipelines_names = [] 
     print(request.GET)
@@ -423,7 +474,6 @@ def load_pipe(request):
         'select'        : "Pipe", 
     }
     return render(request, 'stories/ajax_load.html', context)
-
 
 def load_port(request):
     l_country = request.GET.get('country')
@@ -487,4 +537,29 @@ def sidebar_commodity_discharge_intake(request):
         'dict': dict_dp,
         'select': "SidebarCommodityDP",
     }
+    return render(request, 'stories/ajax_load.html', context)
+
+def sidebar_risk_oil(request):
+    load_country = request.GET.get('load_country')
+    risk_dict = request.session.get('risk_df')
+    start_date =  request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    risk_df = pd.DataFrame.from_dict(risk_dict)
+    corridors = risk_df[risk_df['country'] == load_country]
+    corridors = corridors.drop(['country'], axis= 1)
+    total_intake = corridors['intake'].sum()
+    total_risk =   corridors['risk'].sum()
+
+    corridors_dict = corridors.set_index('corridor_name').T.to_dict('list')
+
+    context ={
+        'load_country': load_country,
+        'corridor_dict': corridors_dict,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_intake': total_intake,
+        'total_risk': total_risk,
+        'select': 'RiskOil',
+    }
+
     return render(request, 'stories/ajax_load.html', context)
