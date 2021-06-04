@@ -21,6 +21,7 @@ urlpatterns = [
     path('ajax/side_bar_dicharge_port_oil/', sidebar_oil_discharge_intake, name='ajax_sidebar_dicharge_port_oil'),
     path('ajax/side_bar_dicharge_port_commodity/', sidebar_commodity_discharge_intake, name='ajax_sidebar_dicharge_port_commodity'),
     path('ajax/side_bar_risk_oil/', sidebar_risk_oil ,name='ajax_sidebar_risk_oil'),
+    path('ajax/tables_risk/',tables_risk_change_units, name= 'ajax_tables_risk'),
 
     path('pricing/', princing_view, name='pricing'),
     path('contact/', contact_view, name='contact'),

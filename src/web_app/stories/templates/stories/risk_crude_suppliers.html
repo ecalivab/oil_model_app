@@ -91,17 +91,29 @@
                   {% endif %} 
                 {%endfor%}
             </p>
-            <p class="py-3 px-3" style="font-size: 22px; position: relative; margin-left:400px;"> 
-              Top Three Risk Countries
-            </p> 
-            <div class="container" style="width:650px; position: relative; margin-left:200px;">
-              {% autoescape off %}{{top_three}}{% endautoescape %}
+            <div class="btn-group btn-block">
+              <p class="py-3 px-3" style="font-size: 22px; position: relative; margin-left:10px;"> <b>Select Table Units:</b> </p>
+              <select class="form-select form-select-md text-center fs-5" id="sel_unit" name="sel_unit" style="width: 150px; height:40px;">
+                  <option class="" value="Mtoe">Mtoe</option>
+                  <option class="" value="MWh">MWh</option>
+                  <option class="" value="TJ">TJ</option>  
+                  <option class="" value="Gcal">Gcal</option> 
+              </select>
             </div>
-            <p class="py-3 px-3" style="font-size: 22px;position: relative; margin-left:400px;"> 
-              Tail Three Risk Countries
-            </p> 
-            <div class="container" style="width:650px; position: relative; margin-left:200px;">  
-              {% autoescape off %}{{tail_three}}{% endautoescape %}
+            <div id="tables">
+              <p class="py-3 px-3" style="font-size: 22px; position: relative; margin-left:400px;"> 
+                Top Three Risk Countries
+              </p> 
+          
+              <div id="table_top" class="container" style="width:650px; position: relative; margin-left:200px;">
+                {% autoescape off %}{{top_three}}{% endautoescape %}
+              </div>
+              <p class="py-3 px-3" style="font-size: 22px;position: relative; margin-left:400px;"> 
+                Tail Three Risk Countries
+              </p> 
+              <div id="table_low" class="container" style="width:650px; position: relative; margin-left:200px;">  
+                {% autoescape off %}{{tail_three}}{% endautoescape %}
+              </div>
             </div>
 
             <div id="carousel" class="carousel slide" data-bs-ride="carousel">
@@ -143,5 +155,21 @@
       </div>
     </div>
   </div>
+
+  <script>
+    $("#sel_unit").change(function () {
+      var unit = $(this).val();  // get the selected country ID from the HTML input
+      $.ajax({                       // initialize an AJAX request
+          url: "{% url 'ajax_tables_risk' %}", // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+          data: {
+            'unit': unit, // add the country id to the GET parameters
+          },
+          success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#tables").html(data);  // replace the contents of the city input with the data that came from the server
+          }
+        });  
+     });
+    </script>
+
   
   {% endblock content %}

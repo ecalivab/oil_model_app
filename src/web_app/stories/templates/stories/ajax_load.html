@@ -1,4 +1,4 @@
-{% if select != "Sidebar" and select != "Sidebar_DP" and select != "SidebarCommodityDP" and select != "RiskOil" %}
+{% if select != "Sidebar" and select != "Sidebar_DP" and select != "SidebarCommodityDP" and select != "RiskOil" and select != "RiskTables" %}
     <option value="">--Select {{select}}--</option>
 {% endif %}
 
@@ -86,4 +86,20 @@
         </u>
     {%endif%}   
     </p>
+{% endif %}
+
+{% if select == "RiskTables" %}
+    <p class="py-3 px-3" style="font-size: 22px; position: relative; margin-left:400px;"> 
+        Top Three Risk Countries
+    </p> 
+
+    <div id="table_top" class="container" style="width:650px; position: relative; margin-left:200px;">
+        {% autoescape off %}{{top_table}}{% endautoescape %}
+    </div>
+    <p class="py-3 px-3" style="font-size: 22px;position: relative; margin-left:400px;"> 
+        Tail Three Risk Countries
+    </p> 
+    <div id="table_low" class="container" style="width:650px; position: relative; margin-left:200px;">  
+        {% autoescape off %}{{low_table}}{% endautoescape %}
+    </div>
 {% endif %}

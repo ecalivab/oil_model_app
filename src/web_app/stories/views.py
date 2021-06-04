@@ -409,6 +409,9 @@ def risk_crude_suppliers_view(request):
     most_list = top_three['Country'].to_list()
     less_list = tail_three['Country'].to_list()
 
+    request.session['top_table'] = top_three.to_dict()
+    request.session['low_table'] = tail_three.to_dict()
+
     top_three['Energy Risk [Mtoe]'] = top_three['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),2))
     top_three['Intake [Mtoe]'] = top_three['Intake [Mtoe]'].apply(lambda x: round((x/1000000),2))
 
@@ -441,7 +444,6 @@ def risk_crude_suppliers_view(request):
         'piechart': piechart_div,
     }
     return render(request, 'stories/risk_crude_suppliers.html', context)
-
 
 #AJAX VIEWS
 def load_corridor(request):
@@ -562,4 +564,51 @@ def sidebar_risk_oil(request):
         'select': 'RiskOil',
     }
 
+    return render(request, 'stories/ajax_load.html', context)
+
+def tables_risk_change_units(request):
+    unit = request.GET.get('unit')
+
+    top_dict = request.session.get('top_table')
+    low_dict = request.session.get('low_table')
+
+    top_df = pd.DataFrame.from_dict(top_dict)
+    low_df = pd.DataFrame.from_dict(low_dict)
+
+    if unit == "MWh":
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round((x/0.086)/1000000,2))
+        top_df = top_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [MWh]'})
+
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round((x/0.086)/1000000,5))
+        low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [MWh]'})
+
+    if unit == "TJ":
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.0036)/1000000,2))
+        top_df = top_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [TJ]'})
+
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.0036)/1000000,5))
+        low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [TJ]'})
+
+    if unit == "Gcal":
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.8604)/1000000,2))
+        top_df = top_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [Gcal]'})
+
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.8604)/1000000,5))
+        low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [Gcal]'})
+    
+    if unit == "Mtoe":
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),2))
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round((x/1000000),5))
+
+    top_df['Intake [Mtoe]'] = top_df['Intake [Mtoe]'].apply(lambda x: round((x/1000000),2))
+    low_df['Intake [Mtoe]'] = low_df['Intake [Mtoe]'].apply(lambda x: round((x/1000000),5))
+    
+    top_table_df = top_df.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
+    low_table_df = low_df.to_html(index=False,justify='left',classes=" table table-striped table-bordered")
+
+    context = {
+        'top_table': top_table_df,
+        'low_table': low_table_df,
+        'select': 'RiskTables',
+    }
     return render(request, 'stories/ajax_load.html', context)
