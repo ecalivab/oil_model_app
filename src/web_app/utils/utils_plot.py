@@ -423,7 +423,7 @@ def horizontal_bar_intake_load_port(df_corridor, df_intake):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -581,7 +581,7 @@ def group_bar_intake_country(corridor_df, intake_df, intake_previous_df, year):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Country. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -661,7 +661,7 @@ def piechart_intake_load_country(df_corridor, df_intake):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -714,7 +714,7 @@ def bar_plot_oil_dicharge_port (df_corridor, df_intake):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -760,7 +760,7 @@ def piechart_discharge_port_oil(df_corridor, df_intake):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -813,7 +813,7 @@ def stack_bar_chart_commodity(df_corridor, df_intake, df_lvh):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -860,7 +860,7 @@ def sunburst_commodity_dp(df_corridor, df_intake, df_lvh):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -897,7 +897,7 @@ def group_bar_risk_country_oil(total_risk_df):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Country. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -938,7 +938,7 @@ def piechart_risk_country_oil(total_risk_df):
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Country. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
@@ -966,3 +966,79 @@ def piechart_risk_country_oil(total_risk_df):
                         )
     
     return piechart
+
+def sidebar_plot_risk_oil(df):
+    if df.empty:
+       barplot = go.Figure()
+       barplot.update_layout(
+            title_text='Total Risk by Corridor [tons]',
+            width=500,
+            height=300,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Country. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 20
+                    }
+                }
+            ]
+        )
+    else:
+        barplot = go.Figure(data=[
+        go.Bar(name='Energy Risk [toe]', x=df['corridor_name'], y=df['risk']),
+        go.Bar(name='Intake [tons]', x=df['corridor_name'], y=df['intake'])
+        ])
+        # Change the bar mode
+        barplot.update_layout(
+            barmode='group',
+            title='Total Risk by Load Country',
+            width = 575,
+            height = 550,
+            font=dict(
+                size=18,
+                ),
+            )
+            
+    return barplot
+
+def sidebar_plot_oil_dishcarge_intake(df):
+    if df.empty:
+       fig = go.Figure()
+       fig.update_layout(
+            title_text='Total Intake by Load Port [tons]',
+            width=500,
+            height=300,
+            xaxis =  { "visible": False },
+            yaxis = { "visible": False },
+            annotations = [
+                {   
+                    "text": "Not Data for the selected Port. Please Select Another",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {
+                        "size": 20
+                    }
+                }
+            ]
+        )
+    else:
+        fig = go.Figure([go.Bar(x=df['load_port'], y=df['intake'],
+                        name='test',
+                        opacity=0.8, marker_color='blue')])
+        
+        fig.update_layout(
+            title='Total Intake by Load Port',
+            width = 575,
+            height = 550,
+            font=dict(
+                size=18,
+                ),
+            )
+            
+    return fig

@@ -439,7 +439,7 @@ def risk_crude_suppliers_view(request):
         'less_list': less_list,
         'top_three': top_table_df,
         'tail_three': tail_table_df,
-        'total_risk': total_risk,
+        'total_risk': round(total_risk/1000000,2),
         'barplot': barplot_div,
         'piechart': piechart_div,
     }
@@ -514,11 +514,15 @@ def sidebar_oil_intake (request):
 def sidebar_oil_discharge_intake (request):
     discharge_port = request.GET.get('discharge_port')
     year = request.GET.get('year')
-    dict_dp, intake_dp = sidebar_discharge_port_oil(discharge_port, year)
+    dict_dp, intake_dp,df = sidebar_discharge_port_oil(discharge_port, year)
+
+    fig = sidebar_plot_oil_dishcarge_intake(df)
+    fig_div = plot(fig, output_type='div', include_plotlyjs=False)
     context = {
         'discharge_port': discharge_port,
         'dict': dict_dp,
         'intake': intake_dp,
+        'fig': fig_div,
         'select': "Sidebar_DP",
     }
     return render(request, 'stories/ajax_load.html', context)
@@ -551,7 +555,9 @@ def sidebar_risk_oil(request):
     corridors = corridors.drop(['country'], axis= 1)
     total_intake = corridors['intake'].sum()
     total_risk =   corridors['risk'].sum()
-
+    corridors = corridors.groupby('corridor_name').sum(['intake, risk']).reset_index()
+    fig = sidebar_plot_risk_oil(corridors)
+    fig_div = plot(fig, output_type='div', include_plotlyjs=False)
     corridors_dict = corridors.set_index('corridor_name').T.to_dict('list')
 
     context ={
@@ -561,6 +567,7 @@ def sidebar_risk_oil(request):
         'end_date': end_date,
         'total_intake': total_intake,
         'total_risk': total_risk,
+        'fig': fig_div,
         'select': 'RiskOil',
     }
 
@@ -583,17 +590,17 @@ def tables_risk_change_units(request):
         low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [MWh]'})
 
     if unit == "TJ":
-        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.0036)/1000000,2))
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/(0.086*1000000))*0.0036),2))
         top_df = top_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [TJ]'})
 
-        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.0036)/1000000,5))
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/(0.086*1000000))*0.0036)/1000000,12))
         low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [TJ]'})
 
     if unit == "Gcal":
-        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.8604)/1000000,2))
+        top_df['Energy Risk [Mtoe]'] = top_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/(0.086*1000000))*0.8604),2))
         top_df = top_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [Gcal]'})
 
-        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/0.086)*0.8604)/1000000,5))
+        low_df['Energy Risk [Mtoe]'] = low_df['Energy Risk [Mtoe]'].apply(lambda x: round(((x/(0.086*1000000))*0.8604),5))
         low_df = low_df.rename(columns = {'Energy Risk [Mtoe]':'Energy Risk [Gcal]'})
     
     if unit == "Mtoe":

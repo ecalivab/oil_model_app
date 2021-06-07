@@ -55,6 +55,9 @@
         </u>
     {%endif%}   
     </p>
+    <div class="container-fluid" style="position: relative; margin-right:0px;">
+        {% autoescape off %}{{ fig }}{% endautoescape %}
+    </div>
 {% endif %}
 
 {% if select == "SidebarCommodityDP" %}
@@ -81,11 +84,14 @@
         The main ports of procedence for petroleum products are the following:
         <ul class="list-group list-group-flush"></ul>
             {%for key, value in corridor_dict.items %}
-                <li class="list-group-item">Corrdior: <b>{{key}}</b> present a risk of <b>{{value.0|floatformat:"0"}}</b> toe by transportin <b>{{value.1|floatformat:"0"}}</b> tons of crude.</li>
+                <li class="list-group-item">Corrdior: <b>{{key}}</b> presents a risk of <b>{{value.0|floatformat:"0"}}</b> toe by transportin <b>{{value.1|floatformat:"0"}}</b> tons of crude.</li>
             {%endfor%}
         </u>
-    {%endif%}   
+        {%endif%}   
     </p>
+    <div class="container-fluid" style="position: relative; margin-right:0px;">
+        {% autoescape off %}{{ fig }}{% endautoescape %}
+    </div>
 {% endif %}
 
 {% if select == "RiskTables" %}

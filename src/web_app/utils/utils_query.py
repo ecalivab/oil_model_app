@@ -343,7 +343,7 @@ def sidebar_discharge_port_oil(dp, year):
         dp_intake = df['intake'].sum()
         df_dict = df.set_index('load_port').T.to_dict('list')
 
-    return df_dict, dp_intake    
+    return df_dict, dp_intake,df    
 
 def sidebar_commodity_dp(dp, year):
     query_df = pd.DataFrame.from_records(Corridor.objects.filter(discharge_port=dp).values('corridor_id', 'load_port'))
@@ -359,13 +359,13 @@ def sidebar_commodity_dp(dp, year):
         fig = go.Figure()
         fig.update_layout(
             title_text='Intake Commodity by Discharge Port',
-            width=600,
+            width=550,
             height=300,
             xaxis =  { "visible": False },
             yaxis = { "visible": False },
             annotations = [
                 {   
-                    "text": "Not Data for the selected Date. Please Select Another",
+                    "text": "Not Data for the selected Port. Please Select Another",
                     "xref": "paper",
                     "yref": "paper",
                     "showarrow": False,
